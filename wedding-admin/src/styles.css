@@ -1,0 +1,64 @@
+/* Global resets + design tokens for the Wedding site.
+ * Component-level styles live in each component's styles: [] array (per CLAUDE.md). */
+
+:root {
+  --color-bg: #F7F3EE;
+  --color-fg: #192519;
+  --color-fg-soft: #4a564a;
+  --color-gold: #C9A86C;
+  --color-gold-soft: #e0caa0;
+  --color-success: #3A7D44;
+  --color-error: #9B2F2F;
+  --color-amber: #A0652A;
+  --color-divider: rgba(25, 37, 25, 0.12);
+  --color-card: #ffffff;
+
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+
+  --shadow-card: 0 1px 2px rgba(25, 37, 25, 0.04), 0 6px 18px rgba(25, 37, 25, 0.05);
+  --shadow-modal: 0 12px 48px rgba(25, 37, 25, 0.22);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  margin: 0;
+}
