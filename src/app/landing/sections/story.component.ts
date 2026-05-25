@@ -102,7 +102,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
           #1c291c 8%,
           #1a2618 25%,
           #192519 72%,
-          #1c291c 90%,
+          #1c291c 95%,
           var(--color-bg) 100%
         );
       }

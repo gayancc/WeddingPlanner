@@ -89,24 +89,13 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
         overflow: hidden;
       }
 
-      .schedule::before {
-        content: '';
-        position: absolute;
-        top: -1px;
-        left: 0;
-        right: 0;
-        height: 120px;
-        background: linear-gradient(to bottom, var(--color-bg), transparent);
-        pointer-events: none;
-      }
-
       .schedule::after {
         content: '';
         position: absolute;
         bottom: -1px;
         left: 0;
         right: 0;
-        height: 120px;
+        height: 60px;
         background: linear-gradient(to top, var(--color-bg), transparent);
         pointer-events: none;
       }

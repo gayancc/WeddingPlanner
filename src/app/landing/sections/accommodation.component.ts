@@ -88,15 +88,6 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
         overflow: hidden;
       }
 
-      .acc::before {
-        content: '';
-        position: absolute;
-        top: -1px; left: 0; right: 0;
-        height: 100px;
-        background: linear-gradient(to bottom, var(--color-bg), transparent);
-        pointer-events: none;
-      }
-
       .acc-inner {
         max-width: 1200px;
         margin: 0 auto;

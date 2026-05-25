@@ -59,9 +59,25 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       .faq {
         padding: 120px 0 140px;
         background: var(--color-bg);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .faq::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 180px;
+        background: linear-gradient(to bottom, transparent, #16120E);
+        pointer-events: none;
+        z-index: 0;
       }
 
       .faq-inner {
+        position: relative;
+        z-index: 1;
         max-width: 760px;
         margin: 0 auto;
         padding: 0 32px;
