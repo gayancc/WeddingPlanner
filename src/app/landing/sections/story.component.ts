@@ -98,10 +98,11 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
         inset: 0;
         background: linear-gradient(
           180deg,
-          var(--color-bg) 0%,
-          #1e2b1e 15%,
-          #1a2618 80%,
-          #1e2b1e 92%,
+          #16120E 0%,
+          #1c291c 8%,
+          #1a2618 25%,
+          #192519 72%,
+          #1c291c 90%,
           var(--color-bg) 100%
         );
       }
