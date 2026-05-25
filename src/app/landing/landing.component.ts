@@ -1,6 +1,7 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Timestamp } from '@angular/fire/firestore';
+import { Title, Meta } from '@angular/platform-browser';
 
 import { SettingsService } from '../core/services/settings.service';
 import { EventService } from '../core/services/event.service';
@@ -70,6 +71,8 @@ import { FooterComponent } from './sections/footer.component';
 export class LandingComponent {
   private settingsSvc = inject(SettingsService);
   private eventSvc    = inject(EventService);
+  private titleSvc    = inject(Title);
+  private metaSvc     = inject(Meta);
 
   readonly settings = toSignal(this.settingsSvc.get(), { initialValue: undefined });
   readonly events   = toSignal(this.eventSvc.listEvents(), { initialValue: [] });
@@ -77,6 +80,18 @@ export class LandingComponent {
   readonly loaded = computed(() => this.settings() !== undefined || true);
 
   readonly effective = computed<WeddingSettings>(() => this.settings() ?? this.fallback());
+
+  constructor() {
+    effect(() => {
+      const s = this.effective();
+      const names = s.coupleNames || 'Her & Him';
+      const pageTitle = `${names} — Wedding`;
+      this.titleSvc.setTitle(pageTitle);
+      this.metaSvc.updateTag({ name: 'description', content: `You're invited to ${names}'s wedding. RSVP via your personal invitation link.` });
+      this.metaSvc.updateTag({ property: 'og:title', content: pageTitle });
+      this.metaSvc.updateTag({ property: 'og:description', content: `Join us to celebrate ${names}.` });
+    });
+  }
 
   private fallback(): WeddingSettings {
     const now     = new Date();

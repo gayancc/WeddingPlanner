@@ -67,7 +67,7 @@ type SectionKey = 'couple' | 'day' | 'venue' | 'website' | 'email' | 'story' | '
         <div class="grid-3">
           <label>Person 1 name <input type="text" [(ngModel)]="form.person1Name" (blur)="save('couple')" /></label>
           <label>Person 2 name <input type="text" [(ngModel)]="form.person2Name" (blur)="save('couple')" /></label>
-          <label>Combined display <input type="text" [(ngModel)]="form.coupleNames" (blur)="save('couple')" placeholder="Alex & Jordan" /></label>
+          <label>Combined display <input type="text" [(ngModel)]="form.coupleNames" (blur)="save('couple')" placeholder="Her & Him" /></label>
         </div>
       </section>
 
