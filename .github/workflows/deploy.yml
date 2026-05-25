@@ -19,11 +19,9 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        working-directory: wedding-admin
         run: npm install
 
       - name: Write environment.ts from secrets
-        working-directory: wedding-admin
         env:
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
@@ -37,7 +35,6 @@ jobs:
           SITE_URL: ${{ secrets.SITE_URL }}
           ALLOWED_ADMIN_EMAILS: ${{ secrets.ALLOWED_ADMIN_EMAILS }}
         run: |
-          # Convert comma-separated emails into a JSON array string
           EMAILS_JSON=$(echo "$ALLOWED_ADMIN_EMAILS" | tr ',' '\n' | sed "s/^[[:space:]]*//" | sed "s/[[:space:]]*$//" | awk '{printf "\"%s\",\n", $0}' | sed '$ s/,$//')
 
           cat > src/environments/environment.ts << EOF
@@ -64,7 +61,6 @@ jobs:
           EOF
 
       - name: Build Angular app
-        working-directory: wedding-admin
         run: npm run build
 
       - name: Deploy to Firebase
@@ -74,4 +70,3 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           projectId: ${{ secrets.FIREBASE_PROJECT_ID }}
           channelId: live
-          entryPoint: wedding-admin

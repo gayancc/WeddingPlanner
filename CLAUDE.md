@@ -11,11 +11,10 @@ Three surfaces sharing a Firebase backend:
 
 ## HOW
 
-The Angular app lives in `./wedding-admin/`. Run all commands from there.
+The Angular app lives at the repo root. Run all commands from the repo root.
 
 ### Commands
 ```bash
-cd wedding-admin
 npm start            # dev server at http://localhost:4200
 npm run build        # production build → dist/wedding-admin/browser
 npm run deploy       # ng build + firebase deploy --only hosting
