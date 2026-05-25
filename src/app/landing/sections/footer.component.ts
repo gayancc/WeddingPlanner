@@ -31,7 +31,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
 
         <!-- Couple names headline -->
         <h2 class="footer-names" #namesEl>
-          {{ settings.coupleNames }}
+          {{ settings.coupleNames || 'Her &amp; Him' }}
         </h2>
 
         @if (settings.weddingDate) {
@@ -78,7 +78,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
             Made with <span class="heart">♥</span> for our special day
           </p>
           <p class="footer-copy">
-            © {{ year }} {{ settings.coupleNames }}
+            © {{ year }} {{ settings.coupleNames || 'Her &amp; Him' }}
           </p>
         </div>
 

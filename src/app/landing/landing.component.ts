@@ -83,7 +83,7 @@ export class LandingComponent {
     const wedding = new Date(now.getFullYear() + 1, 8, 13);
     const rsvp    = new Date(now.getFullYear() + 1, 7, 1);
     return {
-      coupleNames:     'Coming Soon',
+      coupleNames:     'Her & Him',
       person1Name:     '',
       person2Name:     '',
       weddingDate:     Timestamp.fromDate(wedding),

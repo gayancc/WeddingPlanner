@@ -74,7 +74,7 @@ const PARTICLES = [
         </div>
 
         <h1 class="hero-names" #namesEl>
-          {{ settings.coupleNames || 'Together Forever' }}
+          {{ settings.coupleNames || 'Her &amp; Him' }}
         </h1>
 
         @if (settings.weddingDate) {

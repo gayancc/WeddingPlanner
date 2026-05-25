@@ -21,7 +21,7 @@ import { initGsap, gsap } from '../core/utils/gsap';
           <path d="M12 2L4 9l8 13 8-13-8-7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
           <path d="M4 9h16M8 9L12 2l4 7" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
         </svg>
-        <span class="brand-name">{{ coupleNames || 'Our Wedding' }}</span>
+        <span class="brand-name">{{ coupleNames || 'Her &amp; Him' }}</span>
       </a>
 
       <ul class="nav-links" #linksEl>
