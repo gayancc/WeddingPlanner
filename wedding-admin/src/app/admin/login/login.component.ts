@@ -28,7 +28,7 @@ import { NotificationService } from '../../core/services/notification.service';
           }
         </button>
 
-        <p class="footer">Only authorized accounts can sign in.</p>
+        <p class="footer">Only authorised accounts can access this panel.</p>
       </div>
     </div>
   `,
@@ -101,11 +101,39 @@ export class LoginComponent {
     this.busy.set(true);
     try {
       await this.auth.signIn();
-      await this.router.navigate(['/admin']);
+      await this.router.navigate(['/admin/dashboard']);
     } catch (e: unknown) {
-      this.notify.error(e instanceof Error ? e.message : 'Sign-in failed');
+      const msg = this.friendlyError(e);
+      this.notify.error(msg);
     } finally {
       this.busy.set(false);
     }
+  }
+
+  private friendlyError(e: unknown): string {
+    if (!(e instanceof Error)) return 'Sign-in failed. Please try again.';
+
+    const code = (e as { code?: string }).code ?? '';
+
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+      return 'Sign-in cancelled.';
+    }
+    if (code === 'auth/popup-blocked') {
+      return 'Pop-up was blocked by your browser. Please allow pop-ups for this site and try again.';
+    }
+    if (code === 'auth/unauthorized-domain') {
+      return 'This domain is not authorised in Firebase Console → Authentication → Settings → Authorised domains.';
+    }
+    if (code === 'auth/operation-not-allowed') {
+      return 'Google sign-in is not enabled. Go to Firebase Console → Authentication → Sign-in method and enable Google.';
+    }
+    if (code === 'auth/invalid-api-key' || code === 'auth/invalid-credential') {
+      return 'Firebase is not configured. Fill in the real values in environment.ts.';
+    }
+
+    // Custom "not authorised" error thrown after email check
+    if (e.message.includes('not authorised')) return e.message;
+
+    return e.message || 'Sign-in failed. Please try again.';
   }
 }

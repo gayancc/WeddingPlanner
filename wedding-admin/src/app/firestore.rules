@@ -3,8 +3,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // -----------------------------------------------------------------------
+    // isAdmin — server-side email allowlist.
+    // Add every authorised admin email here (lowercase).
+    // Mirror this list in environment.ts → allowedAdminEmails.
+    // -----------------------------------------------------------------------
     function isAdmin() {
-      return request.auth != null;
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+             'you@example.com'
+           ];
     }
 
     // Guests read their own invitation via the secret 32-char token (= doc ID).
