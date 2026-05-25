@@ -386,10 +386,10 @@ export class LocationComponent implements AfterViewInit, OnDestroy {
         start: 'top 70%',
         onEnter: () => {
           gsap.to('.location-info', {
-            opacity: 1, x: 0, duration: 1.0, ease: 'power3.out',
+            opacity: 1, x: 0, y: 0, duration: 1.0, ease: 'power3.out',
           });
           gsap.to('.location-map', {
-            opacity: 1, x: 0, duration: 1.0, ease: 'power3.out', delay: 0.15,
+            opacity: 1, x: 0, y: 0, duration: 1.0, ease: 'power3.out', delay: 0.15,
           });
         },
         once: true,

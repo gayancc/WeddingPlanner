@@ -448,21 +448,23 @@ export class GalleryComponent implements AfterViewInit, OnDestroy {
         once: true,
       });
 
-      // Gallery items stagger reveal
-      ScrollTrigger.create({
-        trigger: '.gallery-grid',
-        start: 'top 80%',
-        onEnter: () => {
-          gsap.to('.gallery-item', {
-            opacity: 1,
-            scale: 1,
-            duration: 0.8,
-            stagger: { amount: 0.6, from: 'start' },
-            ease: 'power3.out',
-          });
-        },
-        once: true,
-      });
+      // Gallery items stagger reveal (only when photos exist)
+      if (this.photos && this.photos.length > 0) {
+        ScrollTrigger.create({
+          trigger: '.gallery-grid',
+          start: 'top 80%',
+          onEnter: () => {
+            gsap.to('.gallery-item', {
+              opacity: 1,
+              scale: 1,
+              duration: 0.8,
+              stagger: { amount: 0.6, from: 'start' },
+              ease: 'power3.out',
+            });
+          },
+          once: true,
+        });
+      }
 
       // Empty state reveal
       ScrollTrigger.create({

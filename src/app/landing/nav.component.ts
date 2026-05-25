@@ -259,6 +259,7 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
     { href: '#schedule', label: 'The Day' },
     { href: '#location', label: 'Location' },
     { href: '#gallery', label: 'Gallery' },
+    { href: '#stay', label: 'Stay' },
     { href: '#faq', label: 'FAQ' },
   ];
 

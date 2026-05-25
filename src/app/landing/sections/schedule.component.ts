@@ -414,17 +414,19 @@ export class ScheduleComponent implements AfterViewInit, OnDestroy {
         once: true,
       });
 
-      // Timeline track draw
-      gsap.to('.timeline-track', {
-        scaleY: 1,
-        ease: 'none',
-        scrollTrigger: {
-          trigger: '.timeline-wrap',
-          start: 'top 65%',
-          end: 'bottom 50%',
-          scrub: 1,
-        },
-      });
+      // Timeline track draw (only when events exist)
+      if (this.events && this.events.length > 0) {
+        gsap.to('.timeline-track', {
+          scaleY: 1,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: '.timeline-wrap',
+            start: 'top 65%',
+            end: 'bottom 50%',
+            scrub: 1,
+          },
+        });
+      }
 
       // Row stagger reveal
       this.rowEls.forEach((row, i) => {

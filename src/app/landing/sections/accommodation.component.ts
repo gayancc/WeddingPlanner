@@ -328,20 +328,22 @@ export class AccommodationComponent implements AfterViewInit, OnDestroy {
         once: true,
       });
 
-      ScrollTrigger.create({
-        trigger: '.acc-grid',
-        start: 'top 80%',
-        onEnter: () => {
-          gsap.to('.acc-card', {
-            opacity: 1,
-            y: 0,
-            duration: 0.8,
-            stagger: 0.12,
-            ease: 'power3.out',
-          });
-        },
-        once: true,
-      });
+      if (this.items && this.items.length > 0) {
+        ScrollTrigger.create({
+          trigger: '.acc-grid',
+          start: 'top 80%',
+          onEnter: () => {
+            gsap.to('.acc-card', {
+              opacity: 1,
+              y: 0,
+              duration: 0.8,
+              stagger: 0.12,
+              ease: 'power3.out',
+            });
+          },
+          once: true,
+        });
+      }
     }, el);
   }
 }
