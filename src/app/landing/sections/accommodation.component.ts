@@ -158,7 +158,6 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
         gap: 0;
         transition: transform 350ms var(--ease-smooth), box-shadow 350ms;
         opacity: 0;
-        transform: translateY(30px);
         position: relative;
         overflow: hidden;
       }
@@ -306,35 +305,69 @@ export class AccommodationComponent implements AfterViewInit, OnDestroy {
 
   private initAnimations() {
     const el = this.sectionEl.nativeElement;
+    if (typeof window === 'undefined') return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.ctx = gsap.context(() => {
+
+      // Header reveal
       ScrollTrigger.create({
-        trigger: '.acc-header',
+        trigger: this.headerEl.nativeElement,
         start: 'top 82%',
+        once: true,
         onEnter: () => {
-          gsap.to('.acc-header', {
+          gsap.to(this.headerEl.nativeElement, {
             opacity: 1, y: 0, duration: 1.0, ease: 'power3.out',
           });
         },
-        once: true,
       });
 
-      if (this.items && this.items.length > 0) {
-        ScrollTrigger.create({
-          trigger: '.acc-grid',
-          start: 'top 80%',
-          onEnter: () => {
-            gsap.to('.acc-card', {
-              opacity: 1,
-              y: 0,
-              duration: 0.8,
-              stagger: 0.12,
-              ease: 'power3.out',
-            });
-          },
-          once: true,
-        });
+      if (!this.items || this.items.length === 0) return;
+
+      if (prefersReduced) {
+        gsap.set('.acc-card', { opacity: 1, y: 0 });
+        return;
       }
+
+      // Set 3D initial state per card
+      const cards = el.querySelectorAll<HTMLElement>('.acc-card');
+      cards.forEach((card, i) => {
+        gsap.set(card, {
+          transformPerspective: 800,
+          rotateX: 12,
+          rotateY: i % 2 === 0 ? -6 : 6,
+          scale: 0.92,
+        });
+      });
+
+      // Cinematic stagger reveal
+      ScrollTrigger.create({
+        trigger: el.querySelector('.acc-grid') as HTMLElement,
+        start: 'top 78%',
+        once: true,
+        onEnter: () => {
+          gsap.to('.acc-card', {
+            opacity: 1, y: 0,
+            rotateX: 0, rotateY: 0, scale: 1,
+            duration: 0.9,
+            stagger: { each: 0.13, ease: 'power2.in' },
+            ease: 'power4.out',
+            onComplete: () => {
+              // Clear inline transforms so CSS :hover can apply
+              cards.forEach((card) => gsap.set(card, { clearProps: 'transform,rotateX,rotateY,scale' }));
+            },
+          });
+
+          // Icon bounce stagger
+          gsap.from('.card-icon', {
+            scale: 0, duration: 0.6,
+            stagger: 0.13, ease: 'back.out(2.5)', delay: 0.2,
+          });
+        },
+      });
+
+
     }, el);
   }
 }

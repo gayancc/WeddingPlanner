@@ -8,13 +8,26 @@ import {
   ViewChild,
   signal,
   inject,
+  NgZone,
 } from '@angular/core';
 import { initGsap, gsap } from '../core/utils/gsap';
+
+const SECTIONS = [
+  { id: 'story',    href: '#story',    label: 'Our Story' },
+  { id: 'schedule', href: '#schedule', label: 'The Day' },
+  { id: 'location', href: '#location', label: 'Location' },
+  { id: 'gallery',  href: '#gallery',  label: 'Gallery' },
+  { id: 'stay',     href: '#stay',     label: 'Stay' },
+  { id: 'faq',      href: '#faq',      label: 'FAQ' },
+];
 
 @Component({
   selector: 'app-landing-nav',
   standalone: true,
   template: `
+    <!-- Scroll progress line at very top -->
+    <div class="nav-progress" #progressEl aria-hidden="true"></div>
+
     <nav class="nav" [class.nav--scrolled]="scrolled()" [class.nav--open]="menuOpen()" #navEl>
       <a class="nav-brand" href="#top" (click)="closeMenu()">
         <svg class="brand-gem" viewBox="0 0 24 24" width="18" height="18" fill="none">
@@ -27,7 +40,14 @@ import { initGsap, gsap } from '../core/utils/gsap';
       <ul class="nav-links" #linksEl>
         @for (link of navLinks; track link.href) {
           <li>
-            <a [href]="link.href" class="nav-link" (click)="closeMenu()">{{ link.label }}</a>
+            <a
+              [href]="link.href"
+              class="nav-link"
+              [class.nav-link--active]="activeSection() === link.id"
+              (click)="closeMenu()"
+            >
+              {{ link.label }}
+            </a>
           </li>
         }
       </ul>
@@ -63,229 +83,202 @@ import { initGsap, gsap } from '../core/utils/gsap';
       <div class="drawer-backdrop" (click)="closeMenu()"></div>
     }
   `,
-  styles: [
-    `
-      .nav {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 100;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 18px 40px;
-        transition:
-          background 350ms var(--ease-smooth),
-          padding 350ms var(--ease-smooth),
-          box-shadow 350ms var(--ease-smooth);
-      }
+  styles: [`
+    /* ── Scroll progress bar ── */
+    .nav-progress {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(to right, var(--color-gold), var(--color-champagne));
+      transform-origin: left;
+      transform: scaleX(0);
+      z-index: 101;
+      pointer-events: none;
+      box-shadow: 0 0 8px rgba(201,168,108,.5);
+    }
 
-      .nav--scrolled {
-        background: rgba(247, 243, 238, 0.92);
-        backdrop-filter: blur(16px) saturate(180%);
-        -webkit-backdrop-filter: blur(16px) saturate(180%);
-        box-shadow: 0 1px 0 rgba(25, 37, 25, 0.08), 0 4px 24px rgba(25, 37, 25, 0.06);
-        padding: 12px 40px;
-      }
+    /* ── Nav shell ── */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 40px;
+      transition:
+        background 350ms var(--ease-smooth),
+        padding 350ms var(--ease-smooth),
+        box-shadow 350ms var(--ease-smooth);
+    }
 
-      .nav-brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: white;
-        transition: color 350ms var(--ease-smooth);
-      }
+    .nav--scrolled {
+      background: rgba(247,243,238,.92);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      box-shadow: 0 1px 0 rgba(25,37,25,.08), 0 4px 24px rgba(25,37,25,.06);
+      padding: 12px 40px;
+    }
 
-      .nav--scrolled .nav-brand { color: var(--color-fg); }
+    /* ── Brand ── */
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+      color: white;
+      transition: color 350ms var(--ease-smooth);
+    }
 
-      .brand-gem {
-        color: var(--color-gold);
-        flex-shrink: 0;
-      }
+    .nav--scrolled .nav-brand { color: var(--color-fg); }
 
-      .brand-name {
-        font-family: var(--font-serif);
-        font-size: 18px;
-        letter-spacing: 0.02em;
-        white-space: nowrap;
-      }
+    .brand-gem { color: var(--color-gold); flex-shrink: 0; }
 
-      .nav-links {
-        display: flex;
-        gap: 6px;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-      }
+    .brand-name {
+      font-family: var(--font-serif);
+      font-size: 18px; letter-spacing: .02em; white-space: nowrap;
+    }
 
-      .nav-link {
-        display: block;
-        padding: 8px 14px;
-        font-size: 13px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.85);
-        border-radius: var(--radius-full);
-        transition:
-          color 200ms,
-          background 200ms;
-        position: relative;
-      }
+    /* ── Desktop links ── */
+    .nav-links {
+      display: flex; gap: 6px; list-style: none; margin: 0; padding: 0;
+    }
 
-      .nav--scrolled .nav-link { color: var(--color-fg-soft); }
+    .nav-link {
+      display: block; padding: 8px 14px;
+      font-size: 13px; letter-spacing: .06em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.85);
+      border-radius: var(--radius-full);
+      transition: color 200ms, background 200ms;
+      position: relative;
+    }
 
-      .nav-link::after {
-        content: '';
-        position: absolute;
-        bottom: 4px;
-        left: 14px;
-        right: 14px;
-        height: 1px;
-        background: var(--color-gold);
-        transform: scaleX(0);
-        transform-origin: center;
-        transition: transform 250ms var(--ease-smooth);
-      }
+    .nav--scrolled .nav-link { color: var(--color-fg-soft); }
 
-      .nav-link:hover { color: var(--color-gold); }
-      .nav-link:hover::after { transform: scaleX(1); }
+    /* Animated underline indicator */
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 4px; left: 14px; right: 14px;
+      height: 1px;
+      background: var(--color-gold);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 280ms var(--ease-smooth);
+    }
 
-      .nav-hamburger {
-        display: none;
-        flex-direction: column;
-        gap: 5px;
-        background: none;
-        border: none;
-        padding: 8px;
-        cursor: pointer;
-      }
+    .nav-link:hover { color: var(--color-gold); }
+    .nav-link:hover::after { transform: scaleX(1); }
 
-      .nav-hamburger span {
-        display: block;
-        width: 24px;
-        height: 1.5px;
-        background: white;
-        border-radius: 2px;
-        transform-origin: center;
-        transition:
-          transform 300ms var(--ease-smooth),
-          opacity 200ms,
-          background 350ms;
-      }
+    /* Active section indicator */
+    .nav-link--active { color: var(--color-gold) !important; }
+    .nav-link--active::after { transform: scaleX(1); }
 
-      .nav--scrolled .nav-hamburger span { background: var(--color-fg); }
+    /* ── Hamburger ── */
+    .nav-hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      background: none; border: none; padding: 8px; cursor: pointer;
+    }
 
-      .nav-hamburger--open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
-      .nav-hamburger--open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-      .nav-hamburger--open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+    .nav-hamburger span {
+      display: block; width: 24px; height: 1.5px;
+      background: white; border-radius: 2px;
+      transform-origin: center;
+      transition: transform 300ms var(--ease-smooth), opacity 200ms, background 350ms;
+    }
 
-      /* Mobile drawer */
-      .mobile-drawer {
-        position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: min(320px, 85vw);
-        background: var(--color-fg);
-        z-index: 99;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transform: translateX(100%);
-        transition: transform 400ms var(--ease-cinematic);
-      }
+    .nav--scrolled .nav-hamburger span { background: var(--color-fg); }
+    .nav-hamburger--open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+    .nav-hamburger--open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .nav-hamburger--open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
 
-      .mobile-drawer--open { transform: translateX(0); }
+    /* ── Mobile drawer ── */
+    .mobile-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: min(320px, 85vw);
+      background: var(--color-fg);
+      z-index: 99;
+      display: flex; align-items: center; justify-content: center;
+      transform: translateX(100%);
+      transition: transform 400ms var(--ease-cinematic);
+    }
 
-      .drawer-links {
-        list-style: none;
-        margin: 0;
-        padding: 24px;
-        width: 100%;
-      }
+    .mobile-drawer--open { transform: translateX(0); }
 
-      .drawer-link {
-        display: flex;
-        align-items: baseline;
-        gap: 16px;
-        padding: 20px 0;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        color: white;
-        font-family: var(--font-serif);
-        font-size: 26px;
-        transition: color 200ms;
-      }
+    .drawer-links {
+      list-style: none; margin: 0; padding: 24px; width: 100%;
+    }
 
-      .drawer-link:hover { color: var(--color-gold); }
+    .drawer-link {
+      display: flex; align-items: baseline; gap: 16px;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      color: white; font-family: var(--font-serif);
+      font-size: 26px; transition: color 200ms;
+    }
 
-      .drawer-num {
-        font-family: var(--font-sans);
-        font-size: 11px;
-        letter-spacing: 0.1em;
-        color: var(--color-gold);
-        flex-shrink: 0;
-      }
+    .drawer-link:hover { color: var(--color-gold); }
 
-      .drawer-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 98;
-        backdrop-filter: blur(4px);
-        animation: fade-in 300ms forwards;
-      }
+    .drawer-num {
+      font-family: var(--font-sans); font-size: 11px;
+      letter-spacing: .1em; color: var(--color-gold); flex-shrink: 0;
+    }
 
-      @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+    .drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 98;
+      backdrop-filter: blur(4px);
+      animation: fade-in 300ms forwards;
+    }
 
-      @media (max-width: 860px) {
-        .nav { padding: 16px 24px; }
-        .nav--scrolled { padding: 12px 24px; }
-        .nav-links { display: none; }
-        .nav-hamburger { display: flex; }
-      }
-    `,
-  ],
+    @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (max-width: 860px) {
+      .nav { padding: 16px 24px; }
+      .nav--scrolled { padding: 12px 24px; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+    }
+  `],
 })
 export class LandingNavComponent implements AfterViewInit, OnDestroy {
   @Input() coupleNames = '';
-  @ViewChild('navEl') navEl!: ElementRef<HTMLElement>;
 
-  readonly scrolled = signal(false);
-  readonly menuOpen = signal(false);
+  @ViewChild('navEl')      navEl!:      ElementRef<HTMLElement>;
+  @ViewChild('progressEl') progressEl!: ElementRef<HTMLElement>;
 
-  readonly navLinks = [
-    { href: '#story', label: 'Our Story' },
-    { href: '#schedule', label: 'The Day' },
-    { href: '#location', label: 'Location' },
-    { href: '#gallery', label: 'Gallery' },
-    { href: '#stay', label: 'Stay' },
-    { href: '#faq', label: 'FAQ' },
-  ];
+  readonly scrolled      = signal(false);
+  readonly menuOpen      = signal(false);
+  readonly activeSection = signal<string>('');
+
+  readonly navLinks = SECTIONS;
 
   private ctx?: gsap.Context;
+  private observer?: IntersectionObserver;
+  private zone = inject(NgZone);
 
   ngAfterViewInit() {
     initGsap();
     this.ctx = gsap.context(() => {
-      gsap.from('.nav-brand, .nav-link', {
-        opacity: 0,
-        y: -12,
-        duration: 0.7,
-        stagger: 0.06,
-        ease: 'power3.out',
-        delay: 1.2,
+      gsap.from(['.nav-brand', '.nav-link'], {
+        opacity: 0, y: -12,
+        duration: 0.7, stagger: 0.06,
+        ease: 'power3.out', delay: 1.2,
       });
     }, this.navEl.nativeElement);
+
+    this.initScrollProgress();
+    this.initSectionObserver();
   }
 
   ngOnDestroy() {
     this.ctx?.revert();
+    this.observer?.disconnect();
   }
 
   @HostListener('window:scroll')
   onScroll() {
     this.scrolled.set(window.scrollY > 60);
+    this.updateProgress();
   }
 
   toggleMenu() {
@@ -296,5 +289,47 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
   closeMenu() {
     this.menuOpen.set(false);
     document.body.style.overflow = '';
+  }
+
+  private updateProgress() {
+    const el = this.progressEl?.nativeElement;
+    if (!el) return;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = max > 0 ? window.scrollY / max : 0;
+    el.style.transform = `scaleX(${progress})`;
+  }
+
+  private initScrollProgress() {
+    // Initial paint
+    this.updateProgress();
+  }
+
+  private initSectionObserver() {
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    this.zone.runOutsideAngular(() => {
+      this.observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const id = entry.target.id;
+              if (id) {
+                this.zone.run(() => this.activeSection.set(id));
+              }
+            }
+          }
+        },
+        {
+          rootMargin: '-30% 0px -60% 0px',
+          threshold: 0,
+        }
+      );
+
+      // Observe all landing section anchors
+      for (const { id } of SECTIONS) {
+        const el = document.getElementById(id);
+        if (el) this.observer!.observe(el);
+      }
+    });
   }
 }

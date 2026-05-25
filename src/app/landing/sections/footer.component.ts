@@ -5,6 +5,7 @@ import {
   OnDestroy,
   ElementRef,
   ViewChild,
+  computed,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { WeddingSettings } from '../../core/models/invitation.model';
@@ -20,6 +21,9 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       <!-- Atmospheric glow -->
       <div class="footer-glow" aria-hidden="true"></div>
 
+      <!-- Horizontal gold line that draws in -->
+      <div class="footer-line-top" #lineEl aria-hidden="true"></div>
+
       <div class="footer-inner">
 
         <!-- Top ornament -->
@@ -29,9 +33,11 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
           <span class="orn-rule"></span>
         </div>
 
-        <!-- Couple names headline -->
-        <h2 class="footer-names" #namesEl>
-          {{ settings.coupleNames || 'Her &amp; Him' }}
+        <!-- Couple names — character split -->
+        <h2 class="footer-names" #namesEl [attr.aria-label]="settings.coupleNames || 'Her & Him'">
+          @for (ch of nameChars(); track $index) {
+            <span class="footer-char" [class.footer-space]="ch === ' '">{{ ch }}</span>
+          }
         </h2>
 
         @if (settings.weddingDate) {
@@ -86,202 +92,166 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
 
     </footer>
   `,
-  styles: [
-    `
-      .footer {
-        background: var(--color-warm-dark);
-        position: relative;
-        overflow: hidden;
-        padding: 0;
-      }
+  styles: [`
+    .footer {
+      background: var(--color-warm-dark);
+      position: relative; overflow: hidden; padding: 0;
+    }
 
-      /* Atmospheric gold glow at top */
-      .footer-glow {
-        position: absolute;
-        top: -120px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 600px;
-        height: 300px;
-        background: radial-gradient(
-          ellipse 70% 60% at 50% 0%,
-          rgba(201, 168, 108, 0.07) 0%,
-          transparent 70%
-        );
-        pointer-events: none;
-      }
+    /* Atmospheric gold glow at top */
+    .footer-glow {
+      position: absolute; top: -120px; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 350px;
+      background: radial-gradient(
+        ellipse 70% 60% at 50% 0%,
+        rgba(201,168,108,.09) 0%, transparent 70%
+      );
+      pointer-events: none;
+    }
 
-      /* Noise texture overlay */
-      .footer::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-        pointer-events: none;
-        opacity: 0.4;
-      }
+    /* Noise texture overlay */
+    .footer::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
 
-      .footer-inner {
-        position: relative;
-        z-index: 1;
-        max-width: 860px;
-        margin: 0 auto;
-        padding: 100px 32px 64px;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
+    /* Gold line at top that draws across on enter */
+    .footer-line-top {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 1px;
+      background: linear-gradient(to right,
+        transparent 0%,
+        rgba(201,168,108,.4) 30%,
+        rgba(201,168,108,.6) 50%,
+        rgba(201,168,108,.4) 70%,
+        transparent 100%
+      );
+      transform-origin: left;
+      transform: scaleX(0);
+    }
 
-      /* ── Ornament ── */
-      .footer-ornament {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 48px;
-        opacity: 0;
-        transform: translateY(20px);
-      }
+    .footer-inner {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 100px 32px 64px;
+      text-align: center;
+      display: flex; flex-direction: column; align-items: center;
+    }
 
-      .orn-rule {
-        display: block;
-        width: 80px;
-        height: 1px;
-        background: linear-gradient(to right, transparent, rgba(201, 168, 108, 0.35), transparent);
-      }
+    /* ── Ornament ── */
+    .footer-ornament {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 48px; opacity: 0;
+    }
 
-      .orn-gem {
-        color: var(--color-gold);
-        font-size: 18px;
-      }
+    .orn-rule {
+      display: block; width: 80px; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(201,168,108,.35), transparent);
+    }
 
-      /* ── Names ── */
-      .footer-names {
-        font-family: var(--font-serif);
-        font-size: clamp(48px, 10vw, 96px);
-        font-weight: 700;
-        color: white;
-        letter-spacing: -0.02em;
-        line-height: 1;
-        margin: 0 0 18px;
-        opacity: 0;
-        transform: translateY(30px);
-        text-shadow: 0 4px 40px rgba(0, 0, 0, 0.4);
-      }
+    .orn-gem { color: var(--color-gold); font-size: 18px; }
 
-      /* ── Date ── */
-      .footer-date {
-        font-family: var(--font-serif);
-        font-style: italic;
-        font-size: clamp(16px, 2.5vw, 20px);
-        color: var(--color-gold-soft);
-        margin: 0 0 8px;
-        letter-spacing: 0.04em;
-        opacity: 0;
-        transform: translateY(20px);
-      }
+    /* ── Character-split names ── */
+    .footer-names {
+      font-family: var(--font-serif);
+      font-size: clamp(48px, 10vw, 96px);
+      font-weight: 700; color: white;
+      letter-spacing: -0.02em; line-height: 1;
+      margin: 0 0 18px;
+      text-shadow: 0 4px 40px rgba(0,0,0,.4);
+    }
 
-      /* ── Venue ── */
-      .footer-venue {
-        font-size: 12px;
-        letter-spacing: 0.24em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.30);
-        margin: 0 0 48px;
-        opacity: 0;
-      }
+    .footer-char {
+      display: inline-block;
+      will-change: transform, opacity;
+    }
 
-      /* ── Divider ── */
-      .footer-divider {
-        width: 1px;
-        height: 64px;
-        background: linear-gradient(
-          to bottom,
-          rgba(201, 168, 108, 0.35),
-          transparent
-        );
-        margin-bottom: 48px;
-      }
+    .footer-space {
+      display: inline-block; width: 0.26em;
+    }
 
-      /* ── Nav links ── */
-      .footer-nav ul {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-        justify-content: center;
-        list-style: none;
-        margin: 0 0 56px;
-        padding: 0;
-        opacity: 0;
-        transform: translateY(20px);
-      }
+    /* ── Date ── */
+    .footer-date {
+      font-family: var(--font-serif); font-style: italic;
+      font-size: clamp(16px, 2.5vw, 20px);
+      color: var(--color-gold-soft);
+      margin: 0 0 8px; letter-spacing: .04em; opacity: 0;
+    }
 
-      .footer-link {
-        display: block;
-        padding: 10px 22px;
-        font-size: 12px;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        color: rgba(255, 255, 255, 0.45);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: var(--radius-full);
-        transition: all 280ms var(--ease-smooth);
-      }
+    /* ── Venue ── */
+    .footer-venue {
+      font-size: 12px; letter-spacing: .24em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.30);
+      margin: 0 0 48px; opacity: 0;
+    }
 
-      .footer-link:hover {
-        color: var(--color-gold-soft);
-        border-color: rgba(201, 168, 108, 0.35);
-        background: rgba(201, 168, 108, 0.06);
-      }
+    /* ── Divider ── */
+    .footer-divider {
+      width: 1px; height: 64px;
+      background: linear-gradient(to bottom, rgba(201,168,108,.35), transparent);
+      margin-bottom: 48px;
+    }
 
-      .footer-link--top {
-        color: var(--color-gold-dim);
-        border-color: rgba(201, 168, 108, 0.2);
-      }
+    /* ── Nav links ── */
+    .footer-nav ul {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      justify-content: center; list-style: none;
+      margin: 0 0 56px; padding: 0; opacity: 0;
+    }
 
-      /* ── Bottom bar ── */
-      .footer-bottom {
-        opacity: 0;
-        border-top: 1px solid rgba(255, 255, 255, 0.06);
-        padding-top: 32px;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 6px;
-      }
+    .footer-link {
+      display: block; padding: 10px 22px;
+      font-size: 12px; letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.45);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius-full);
+      transition: all 280ms var(--ease-smooth);
+    }
 
-      .footer-credit {
-        font-style: italic;
-        color: rgba(255, 255, 255, 0.28);
-        font-size: 13px;
-        margin: 0;
-      }
+    .footer-link:hover {
+      color: var(--color-gold-soft);
+      border-color: rgba(201,168,108,.35);
+      background: rgba(201,168,108,.06);
+    }
 
-      .heart { color: var(--color-gold); }
+    .footer-link--top { color: var(--color-gold-dim); border-color: rgba(201,168,108,.2); }
 
-      .footer-copy {
-        font-size: 11px;
-        letter-spacing: 0.08em;
-        color: rgba(255, 255, 255, 0.16);
-        margin: 0;
-      }
+    /* ── Bottom bar ── */
+    .footer-bottom {
+      opacity: 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+      padding-top: 32px; width: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 6px;
+    }
 
-      /* ── Responsive ── */
-      @media (max-width: 600px) {
-        .footer-inner { padding: 80px 20px 48px; }
-        .orn-rule { width: 48px; }
-        .footer-nav ul { gap: 6px; }
-      }
-    `,
-  ],
+    .footer-credit { font-style: italic; color: rgba(255,255,255,.28); font-size: 13px; margin: 0; }
+    .heart { color: var(--color-gold); }
+    .footer-copy { font-size: 11px; letter-spacing: .08em; color: rgba(255,255,255,.16); margin: 0; }
+
+    @media (max-width: 600px) {
+      .footer-inner { padding: 80px 20px 48px; }
+      .orn-rule { width: 48px; }
+      .footer-nav ul { gap: 6px; }
+    }
+  `],
 })
 export class FooterComponent implements AfterViewInit, OnDestroy {
   @Input({ required: true }) settings!: WeddingSettings;
 
   @ViewChild('footerEl') footerEl!: ElementRef<HTMLElement>;
+  @ViewChild('lineEl')   lineEl!:   ElementRef<HTMLElement>;
 
   readonly year = new Date().getFullYear();
+
+  readonly nameChars = computed(() =>
+    (this.settings.coupleNames || 'Her & Him').split('')
+  );
+
   private ctx?: gsap.Context;
 
   scrollTop(e: Event) {
@@ -300,8 +270,27 @@ export class FooterComponent implements AfterViewInit, OnDestroy {
 
   private initAnimations() {
     const el = this.footerEl.nativeElement;
+    if (typeof window === 'undefined') return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.ctx = gsap.context(() => {
+
+      if (prefersReduced) {
+        gsap.set(['.footer-ornament', '.footer-char', '.footer-date', '.footer-venue',
+          '.footer-nav ul', '.footer-bottom', '.footer-line-top'],
+          { opacity: 1, y: 0, yPercent: 0, rotateZ: 0, scaleX: 1 });
+        return;
+      }
+
+      // ── Initial states for character split ──
+      gsap.set('.footer-char:not(.footer-space)', {
+        opacity: 0, yPercent: 90,
+        rotateZ: (i: number) => i % 2 === 0 ? 5 : -5,
+      });
+      gsap.set('.footer-space', { opacity: 1 });
+
+      // ── Cinematic entrance timeline on scroll ──
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: el,
@@ -310,21 +299,35 @@ export class FooterComponent implements AfterViewInit, OnDestroy {
         },
       });
 
-      tl.to('.footer-ornament', { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' })
-        .to('.footer-names',    { opacity: 1, y: 0, duration: 1.1, ease: 'power4.out' }, '-=0.5')
-        .to('.footer-date',     { opacity: 1, y: 0, duration: 0.8, ease: 'power3.out' }, '-=0.6')
-        .to('.footer-venue',    { opacity: 1,        duration: 0.6 },                    '-=0.4')
-        .to('.footer-nav ul',   { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }, '-=0.2')
-        .to('.footer-bottom',   { opacity: 1,        duration: 0.6 },                    '-=0.3');
+      // Gold line draws across
+      tl.to(this.lineEl.nativeElement, {
+        scaleX: 1, duration: 1.0, ease: 'power3.out',
+      }, 0);
 
-      // Subtle floating glow animation
+      // Ornament fades in
+      tl.to('.footer-ornament', {
+        opacity: 1, duration: 0.8, ease: 'power3.out',
+      }, 0.2);
+
+      // Characters cascade in from below
+      tl.to('.footer-char:not(.footer-space)', {
+        opacity: 1, yPercent: 0, rotateZ: 0,
+        duration: 1.0,
+        stagger: { each: 0.038, ease: 'power2.in' },
+        ease: 'power4.out',
+      }, 0.4);
+
+      tl.to('.footer-date',  { opacity: 1, duration: 0.7, ease: 'power3.out' }, 1.0)
+        .to('.footer-venue', { opacity: 1, duration: 0.6 }, '-=0.45')
+        .to('.footer-nav ul', { opacity: 1, duration: 0.7, ease: 'power3.out' }, '-=0.3')
+        .to('.footer-bottom', { opacity: 1, duration: 0.6 }, '-=0.3');
+
+      // Ambient glow float
       gsap.to('.footer-glow', {
-        y: 20,
-        duration: 4,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
+        y: 22, duration: 5,
+        repeat: -1, yoyo: true, ease: 'sine.inOut',
       });
+
     }, el);
   }
 }

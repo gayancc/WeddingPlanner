@@ -128,7 +128,6 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       .faq-row {
         border-top: 1px solid var(--color-divider);
         opacity: 0;
-        transform: translateY(20px);
         position: relative;
       }
 
@@ -305,34 +304,53 @@ export class FaqComponent implements AfterViewInit, OnDestroy {
 
   private initAnimations() {
     const el = this.sectionEl.nativeElement;
+    if (typeof window === 'undefined') return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.ctx = gsap.context(() => {
+
+      // Header reveal
       ScrollTrigger.create({
-        trigger: '.faq-header',
+        trigger: el.querySelector('.faq-header') as HTMLElement,
         start: 'top 82%',
+        once: true,
         onEnter: () => {
           gsap.to('.faq-header', {
             opacity: 1, y: 0, duration: 1.0, ease: 'power3.out',
           });
         },
-        once: true,
       });
 
-      // Row stagger reveal
+      if (prefersReduced) {
+        gsap.set('.faq-row', { opacity: 1, y: 0, x: 0 });
+        return;
+      }
+
+      // Set rows with alternating X offset for cinematic stagger
+      const rowEls = el.querySelectorAll<HTMLElement>('.faq-row');
+      rowEls.forEach((row, i) => {
+        gsap.set(row, {
+          opacity: 0,
+          x: i % 2 === 0 ? -32 : 32,
+          y: 16,
+        });
+      });
+
       ScrollTrigger.create({
-        trigger: '.faq-list',
+        trigger: el.querySelector('.faq-list') as HTMLElement,
         start: 'top 80%',
+        once: true,
         onEnter: () => {
           gsap.to('.faq-row', {
-            opacity: 1,
-            y: 0,
-            duration: 0.7,
-            stagger: 0.09,
+            opacity: 1, x: 0, y: 0,
+            duration: 0.75,
+            stagger: 0.1,
             ease: 'power3.out',
           });
         },
-        once: true,
       });
+
     }, el);
   }
 }

@@ -31,9 +31,8 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
           <p class="schedule-sub">Our celebration, moment by moment</p>
         </div>
 
-        <!-- Timeline -->
         @if (events && events.length > 0) {
-          <div class="timeline-wrap">
+          <div class="timeline-wrap" #wrapEl>
             <div class="timeline-track" #trackEl></div>
 
             @for (e of sorted(); track e.id; let i = $index) {
@@ -80,275 +79,215 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       </div>
     </section>
   `,
-  styles: [
-    `
-      .schedule {
-        padding: 120px 0 140px;
-        background: var(--color-pearl);
-        position: relative;
-        overflow: hidden;
-      }
+  styles: [`
+    .schedule {
+      padding: 120px 0 140px;
+      background: var(--color-pearl);
+      position: relative;
+      overflow: hidden;
+    }
 
-      .schedule::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        right: 0;
-        height: 60px;
-        background: linear-gradient(to top, var(--color-bg), transparent);
-        pointer-events: none;
-      }
+    .schedule::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 0; right: 0; height: 60px;
+      background: linear-gradient(to top, var(--color-bg), transparent);
+      pointer-events: none;
+    }
 
-      .schedule-inner {
-        max-width: 860px;
-        margin: 0 auto;
-        padding: 0 24px;
-      }
+    .schedule-inner {
+      max-width: 860px; margin: 0 auto; padding: 0 24px;
+    }
 
-      /* ── Header ── */
-      .schedule-header {
-        text-align: center;
-        margin-bottom: 80px;
-        opacity: 0;
-        transform: translateY(30px);
-      }
+    /* ── Header ── */
+    .schedule-header {
+      text-align: center; margin-bottom: 80px;
+      opacity: 0; transform: translateY(30px);
+    }
 
-      .schedule-eyebrow {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 18px;
-        font-size: 10px;
-        letter-spacing: 0.34em;
-        text-transform: uppercase;
-        color: var(--color-gold);
-        margin: 0 0 18px;
-      }
+    .schedule-eyebrow {
+      display: flex; align-items: center; justify-content: center;
+      gap: 18px; font-size: 10px; letter-spacing: .34em;
+      text-transform: uppercase; color: var(--color-gold); margin: 0 0 18px;
+    }
 
-      .eyebrow-rule {
-        display: block;
-        width: 36px;
-        height: 1px;
-        background: currentColor;
-        opacity: 0.55;
-      }
+    .eyebrow-rule {
+      display: block; width: 36px; height: 1px;
+      background: currentColor; opacity: .55;
+    }
 
-      .schedule-title {
-        font-family: var(--font-serif);
-        font-size: clamp(42px, 7vw, 72px);
-        font-weight: 700;
-        color: var(--color-fg);
-        letter-spacing: -0.02em;
-        line-height: 1;
-        margin-bottom: 12px;
-      }
+    .schedule-title {
+      font-family: var(--font-serif);
+      font-size: clamp(42px, 7vw, 72px); font-weight: 700;
+      color: var(--color-fg); letter-spacing: -0.02em;
+      line-height: 1; margin-bottom: 12px;
+    }
 
-      .schedule-sub {
-        font-family: var(--font-serif);
-        font-style: italic;
-        font-size: 17px;
-        color: var(--color-fg-soft);
-        margin: 0;
-      }
+    .schedule-sub {
+      font-family: var(--font-serif); font-style: italic;
+      font-size: 17px; color: var(--color-fg-soft); margin: 0;
+    }
 
-      /* ── Timeline ── */
-      .timeline-wrap {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        gap: 0;
-      }
+    /* ── Timeline ── */
+    .timeline-wrap {
+      position: relative;
+      display: flex; flex-direction: column; gap: 0;
+    }
 
-      /* Animated vertical track line */
-      .timeline-track {
-        position: absolute;
-        left: 118px;
-        top: 28px;
-        bottom: 28px;
-        width: 1px;
-        background: linear-gradient(
-          to bottom,
-          transparent,
-          rgba(201, 168, 108, 0.3) 10%,
-          rgba(201, 168, 108, 0.3) 90%,
-          transparent
-        );
-        transform-origin: top;
-        transform: scaleY(0);
-      }
+    .timeline-track {
+      position: absolute;
+      left: 118px; top: 28px; bottom: 28px;
+      width: 1px;
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(201,168,108,.3) 10%,
+        rgba(201,168,108,.3) 90%,
+        transparent
+      );
+      transform-origin: top; transform: scaleY(0);
+    }
 
-      /* ── Row ── */
-      .timeline-row {
-        display: grid;
-        grid-template-columns: 90px 56px 1fr;
-        gap: 0 24px;
-        align-items: center;
-        padding: 20px 0;
-        opacity: 0;
-        transform: translateX(-24px);
-        position: relative;
-      }
+    /* ── Row ── */
+    .timeline-row {
+      display: grid;
+      grid-template-columns: 90px 56px 1fr;
+      gap: 0 24px; align-items: center;
+      padding: 20px 0;
+      /* Initial state set by GSAP */
+      opacity: 0;
+      position: relative;
+    }
 
-      /* ── Time ── */
-      .row-time {
-        text-align: right;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-      }
+    /* ── Time ── */
+    .row-time {
+      text-align: right;
+      display: flex; flex-direction: column; align-items: flex-end;
+    }
 
-      .time-val {
-        font-family: var(--font-serif);
-        font-size: 26px;
-        font-weight: 700;
-        color: var(--color-fg);
-        line-height: 1;
-        font-variant-numeric: tabular-nums;
-      }
+    .time-val {
+      font-family: var(--font-serif); font-size: 26px; font-weight: 700;
+      color: var(--color-fg); line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
 
-      .time-period {
-        font-size: 10px;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
-        color: var(--color-fg-soft);
-        margin-top: 3px;
-      }
+    .time-period {
+      font-size: 10px; letter-spacing: .15em;
+      text-transform: uppercase; color: var(--color-fg-soft); margin-top: 3px;
+    }
 
-      /* ── Node ── */
-      .row-node {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        z-index: 2;
-      }
+    /* ── Node ── */
+    .row-node {
+      display: flex; align-items: center; justify-content: center;
+      position: relative; z-index: 2;
+    }
 
-      .node-ring {
-        position: absolute;
-        inset: -6px;
-        border-radius: 50%;
-        border: 1px solid rgba(201, 168, 108, 0.22);
-        animation: ring-pulse 3s ease-in-out infinite;
-      }
+    .node-ring {
+      position: absolute; inset: -6px;
+      border-radius: 50%;
+      border: 1px solid rgba(201,168,108,.22);
+      animation: ring-pulse 3s ease-in-out infinite;
+    }
 
-      @keyframes ring-pulse {
-        0%, 100% { opacity: 0.4; transform: scale(1); }
-        50%       { opacity: 0.9; transform: scale(1.15); }
-      }
+    @keyframes ring-pulse {
+      0%, 100% { opacity: .4; transform: scale(1); }
+      50%       { opacity: .9; transform: scale(1.15); }
+    }
 
-      .node-dot {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--color-fg);
-        border: 2px solid var(--color-gold);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 0 6px rgba(201, 168, 108, 0.08),
-                    0 4px 16px rgba(25, 37, 25, 0.25);
-        transition: transform 250ms var(--ease-bounce), box-shadow 250ms;
-      }
+    .node-dot {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--color-fg);
+      border: 2px solid var(--color-gold);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 0 6px rgba(201,168,108,.08), 0 4px 16px rgba(25,37,25,.25);
+      transition: transform 250ms var(--ease-bounce), box-shadow 250ms;
+    }
 
-      .timeline-row:hover .node-dot {
-        transform: scale(1.12);
-        box-shadow: 0 0 0 8px rgba(201, 168, 108, 0.12),
-                    0 6px 20px rgba(25, 37, 25, 0.3);
-      }
+    .timeline-row:hover .node-dot {
+      transform: scale(1.12);
+      box-shadow: 0 0 0 10px rgba(201,168,108,.14), 0 6px 20px rgba(25,37,25,.3);
+    }
 
-      .node-icon { font-size: 16px; line-height: 1; }
+    .node-icon { font-size: 16px; line-height: 1; }
 
-      /* ── Card ── */
-      .row-card {
-        background: white;
-        border-radius: var(--radius-xl);
-        padding: 24px 28px;
-        box-shadow: var(--shadow-card);
-        border: 1px solid rgba(25, 37, 25, 0.05);
-        transition: transform 300ms var(--ease-smooth), box-shadow 300ms;
-        position: relative;
-        overflow: hidden;
-      }
+    /* ── Card ── */
+    .row-card {
+      background: white; border-radius: var(--radius-xl);
+      padding: 24px 28px; box-shadow: var(--shadow-card);
+      border: 1px solid rgba(25,37,25,.05);
+      transition: transform 300ms var(--ease-smooth), box-shadow 300ms;
+      position: relative; overflow: hidden;
+      transform-origin: left center;
+    }
 
-      .row-card::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        width: 3px;
-        background: linear-gradient(to bottom, var(--color-gold), var(--color-champagne));
-        border-radius: 3px 0 0 3px;
-      }
+    .row-card::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+      background: linear-gradient(to bottom, var(--color-gold), var(--color-champagne));
+      border-radius: 3px 0 0 3px;
+    }
 
-      .timeline-row:hover .row-card {
-        transform: translateY(-3px) translateX(3px);
-        box-shadow: var(--shadow-lift);
-      }
+    /* Gold shimmer sweep on hover */
+    .row-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -120%; width: 60%; height: 100%;
+      background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(201,168,108,.07) 50%,
+        transparent 70%
+      );
+      transition: left 0ms;
+    }
 
-      .card-number {
-        font-size: 10px;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: var(--color-gold);
-        margin-bottom: 6px;
-      }
+    .timeline-row:hover .row-card {
+      transform: translateY(-4px) translateX(4px);
+      box-shadow: var(--shadow-lift);
+    }
 
-      .card-title {
-        font-family: var(--font-serif);
-        font-size: 22px;
-        font-weight: 700;
-        color: var(--color-fg);
-        margin-bottom: 4px;
-      }
+    .timeline-row:hover .row-card::after {
+      left: 140%; transition: left 500ms ease-out;
+    }
 
-      .card-venue {
-        font-size: 14px;
-        color: var(--color-fg-soft);
-        margin: 0 0 2px;
-      }
+    .card-number {
+      font-size: 10px; letter-spacing: .2em;
+      text-transform: uppercase; color: var(--color-gold); margin-bottom: 6px;
+    }
 
-      .card-address {
-        font-size: 12px;
-        color: var(--color-fg-soft);
-        opacity: 0.7;
-        margin: 0 0 8px;
-      }
+    .card-title {
+      font-family: var(--font-serif); font-size: 22px; font-weight: 700;
+      color: var(--color-fg); margin-bottom: 4px;
+    }
 
-      .card-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 4px 12px;
-        border-radius: var(--radius-full);
-        background: rgba(201, 168, 108, 0.10);
-        color: var(--color-amber);
-        font-size: 11px;
-        letter-spacing: 0.05em;
-        margin-top: 6px;
-      }
+    .card-venue { font-size: 14px; color: var(--color-fg-soft); margin: 0 0 2px; }
 
-      .schedule-empty {
-        text-align: center;
-        color: var(--color-fg-soft);
-        font-style: italic;
-      }
+    .card-address {
+      font-size: 12px; color: var(--color-fg-soft);
+      opacity: .7; margin: 0 0 8px;
+    }
 
-      /* ── Responsive ── */
-      @media (max-width: 640px) {
-        .timeline-row {
-          grid-template-columns: 60px 40px 1fr;
-          gap: 0 12px;
-        }
-        .timeline-track { left: 80px; }
-        .time-val { font-size: 18px; }
-        .node-dot { width: 32px; height: 32px; }
-        .node-icon { font-size: 13px; }
-        .row-card { padding: 18px 20px; }
-      }
-    `,
-  ],
+    .card-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: var(--radius-full);
+      background: rgba(201,168,108,.10); color: var(--color-amber);
+      font-size: 11px; letter-spacing: .05em; margin-top: 6px;
+    }
+
+    .schedule-empty {
+      text-align: center; color: var(--color-fg-soft); font-style: italic;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .timeline-row { grid-template-columns: 60px 40px 1fr; gap: 0 12px; }
+      .timeline-track { left: 80px; }
+      .time-val { font-size: 18px; }
+      .node-dot { width: 32px; height: 32px; }
+      .node-icon { font-size: 13px; }
+      .row-card { padding: 18px 20px; }
+    }
+  `],
 })
 export class ScheduleComponent implements AfterViewInit, OnDestroy {
   @Input() events: WeddingEvent[] = [];
@@ -356,6 +295,7 @@ export class ScheduleComponent implements AfterViewInit, OnDestroy {
   @ViewChild('sectionEl') sectionEl!: ElementRef<HTMLElement>;
   @ViewChild('headerEl')  headerEl!:  ElementRef<HTMLElement>;
   @ViewChild('trackEl')   trackEl!:   ElementRef<HTMLElement>;
+  @ViewChild('wrapEl')    wrapEl!:    ElementRef<HTMLElement>;
   @ViewChildren('row')    rowEls!:    QueryList<ElementRef<HTMLElement>>;
 
   private ctx?: gsap.Context;
@@ -370,11 +310,11 @@ export class ScheduleComponent implements AfterViewInit, OnDestroy {
 
   icon(name: string): string {
     const n = name.toLowerCase();
-    if (n.includes('ceremony'))           return '💍';
+    if (n.includes('ceremony'))                      return '💍';
     if (n.includes('reception') || n.includes('dinner')) return '🥂';
-    if (n.includes('cocktail'))           return '🍸';
-    if (n.includes('brunch'))             return '🥞';
-    if (n.includes('photo'))              return '📸';
+    if (n.includes('cocktail'))                      return '🍸';
+    if (n.includes('brunch'))                        return '🥞';
+    if (n.includes('photo'))                         return '📸';
     return '✦';
   }
 
@@ -389,51 +329,84 @@ export class ScheduleComponent implements AfterViewInit, OnDestroy {
 
   private initAnimations() {
     const el = this.sectionEl.nativeElement;
+    if (typeof window === 'undefined') return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.ctx = gsap.context(() => {
-      // Header reveal
+
+      // ── Header reveal ──
       ScrollTrigger.create({
-        trigger: '.schedule-header',
+        trigger: this.headerEl.nativeElement,
         start: 'top 82%',
+        once: true,
         onEnter: () => {
-          gsap.to('.schedule-header', {
+          gsap.to(this.headerEl.nativeElement, {
             opacity: 1, y: 0, duration: 1.0, ease: 'power3.out',
           });
         },
-        once: true,
       });
 
-      // Timeline track draw (only when events exist)
-      if (this.events && this.events.length > 0) {
-        gsap.to('.timeline-track', {
-          scaleY: 1,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: '.timeline-wrap',
-            start: 'top 65%',
-            end: 'bottom 50%',
-            scrub: 1,
-          },
-        });
+      if (!this.events || this.events.length === 0) return;
+
+      const rows = this.rowEls.toArray();
+
+      if (prefersReduced) {
+        gsap.set(rows.map((r) => r.nativeElement), { opacity: 1 });
+        gsap.set('.timeline-track', { scaleY: 1 });
+        return;
       }
 
-      // Row stagger reveal
-      this.rowEls.forEach((row, i) => {
-        ScrollTrigger.create({
-          trigger: row.nativeElement,
-          start: 'top 82%',
-          onEnter: () => {
-            gsap.to(row.nativeElement, {
-              opacity: 1,
-              x: 0,
-              duration: 0.8,
-              ease: 'power3.out',
-              delay: i * 0.08,
-            });
-          },
-          once: true,
+      // ── Set initial 3D state for each row ──
+      rows.forEach((row, i) => {
+        gsap.set(row.nativeElement, {
+          opacity: 0,
+          x: -32,
+          rotateY: i % 2 === 0 ? 8 : -4,
+          scale: 0.94,
+          transformOrigin: 'left center',
+          transformPerspective: 800,
         });
       });
+
+      // ── Timeline track draws with scroll ──
+      gsap.to(this.trackEl.nativeElement, {
+        scaleY: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: this.wrapEl.nativeElement,
+          start: 'top 70%',
+          end: 'bottom 55%',
+          scrub: 1,
+        },
+      });
+
+      // ── Scrub-driven row reveals ──
+      // Each row enters at a specific scroll progress point
+      // Rows are staggered so the track draws as cards unfold
+      rows.forEach((row, i) => {
+        ScrollTrigger.create({
+          trigger: this.wrapEl.nativeElement,
+          start: 'top 75%',
+          end: 'bottom 40%',
+          onUpdate: (self) => {
+            const threshold = i / (rows.length + 1);
+            if (self.progress >= threshold) {
+              const rowProgress = Math.min(
+                (self.progress - threshold) / (0.8 / rows.length),
+                1
+              );
+              gsap.set(row.nativeElement, {
+                opacity:   rowProgress,
+                x:         -32 * (1 - rowProgress),
+                rotateY:   (i % 2 === 0 ? 8 : -4) * (1 - rowProgress),
+                scale:     0.94 + 0.06 * rowProgress,
+              });
+            }
+          },
+        });
+      });
+
     }, el);
   }
 }

@@ -378,38 +378,78 @@ export class LocationComponent implements AfterViewInit, OnDestroy {
 
   private initAnimations() {
     const el = this.sectionEl.nativeElement;
+    if (typeof window === 'undefined') return;
+
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.ctx = gsap.context(() => {
-      // Info panel slides in from left
-      ScrollTrigger.create({
-        trigger: el,
-        start: 'top 70%',
-        onEnter: () => {
-          gsap.to('.location-info', {
-            opacity: 1, x: 0, y: 0, duration: 1.0, ease: 'power3.out',
-          });
-          gsap.to('.location-map', {
-            opacity: 1, x: 0, y: 0, duration: 1.0, ease: 'power3.out', delay: 0.15,
-          });
-        },
-        once: true,
+
+      if (prefersReduced) {
+        gsap.set([this.infoEl.nativeElement, this.mapEl.nativeElement], {
+          opacity: 1, x: 0, y: 0,
+        });
+        return;
+      }
+
+      // Set 3D initial state
+      gsap.set(this.infoEl.nativeElement, {
+        transformPerspective: 900,
+        rotateY: -14,
+      });
+      gsap.set(this.mapEl.nativeElement, {
+        transformPerspective: 900,
+        rotateY: 10,
       });
 
-      // Detail items stagger
+      // Cinematic split reveal
       ScrollTrigger.create({
-        trigger: '.info-details',
-        start: 'top 80%',
-        onEnter: () => {
-          gsap.from('.info-detail', {
-            opacity: 0,
-            x: -20,
-            duration: 0.6,
-            stagger: 0.1,
-            ease: 'power3.out',
-          });
-        },
+        trigger: el,
+        start: 'top 72%',
         once: true,
+        onEnter: () => {
+          const tl = gsap.timeline();
+
+          tl.to(this.infoEl.nativeElement, {
+            opacity: 1, x: 0, y: 0, rotateY: 0,
+            duration: 1.1, ease: 'power3.out',
+          }, 0);
+
+          tl.to(this.mapEl.nativeElement, {
+            opacity: 1, x: 0, y: 0, rotateY: 0,
+            duration: 1.1, ease: 'power3.out',
+          }, 0.12);
+
+          // Detail items cascade in
+          tl.from('.info-detail', {
+            opacity: 0, x: -24, duration: 0.55,
+            stagger: 0.1, ease: 'power3.out',
+          }, 0.5);
+
+          // Icon bounce
+          tl.from('.detail-icon', {
+            scale: 0.4, duration: 0.55,
+            stagger: 0.1, ease: 'back.out(2)',
+          }, 0.55);
+
+          // CTA reveals last
+          tl.from('.info-cta', {
+            opacity: 0, y: 12, duration: 0.5, ease: 'power3.out',
+          }, 0.9);
+        },
       });
+
+      // Subtle map parallax
+      gsap.to(this.mapEl.nativeElement, {
+        yPercent: -8,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: 2,
+        },
+      });
+
     }, el);
   }
 }
