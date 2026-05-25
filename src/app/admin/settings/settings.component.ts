@@ -1,6 +1,7 @@
-import { Component, inject, signal, effect, untracked } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DestroyRef } from '@angular/core';
 import { Timestamp } from '@angular/fire/firestore';
 import emailjs from '@emailjs/browser';
 
@@ -313,27 +314,27 @@ export class SettingsComponent {
   readonly auth = inject(AuthService);
   private notify = inject(NotificationService);
 
-  private remoteSettings = toSignal(this.svc.get(), { initialValue: undefined });
   readonly loaded = signal(false);
   readonly savedKey = signal<SectionKey | null>(null);
   readonly testing = signal(false);
 
   form: SettingsForm = this.emptyForm();
 
+  private destroyRef = inject(DestroyRef);
+  // Prevents re-initializing the form after the user has started editing
+  private formInitialized = false;
+
   constructor() {
-    effect(() => {
-      const s = this.remoteSettings();
-      // Only initialize once from remote — after that, we own the local form.
-      if (s !== undefined && !this.loaded()) {
-        untracked(() => {
-          this.form = this.fromRemote(s);
-          this.loaded.set(true);
-        });
-      } else if (s === undefined && this.remoteSettings.length === 0) {
-        // doc doesn't exist yet — show empty form
-        untracked(() => this.loaded.set(true));
-      }
-    });
+    // Subscribe directly to the Firestore observable so the first real emission
+    // (not a synchronous initialValue) populates the form exactly once.
+    this.svc.get()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((s) => {
+        if (this.formInitialized) return;
+        this.form = this.fromRemote(s);
+        this.loaded.set(true);
+        this.formInitialized = true;
+      });
   }
 
   async save(section: SectionKey) {
