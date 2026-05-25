@@ -29,7 +29,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
 
         @if (items && items.length > 0) {
           <div class="acc-grid">
-            @for (a of items; track a.name; let i = $index) {
+            @for (a of items; track i; let i = $index) {
               <article class="acc-card" #card>
                 <div class="card-header">
                   <div class="card-icon">

@@ -7,6 +7,7 @@ import { EventService } from '../core/services/event.service';
 import { WeddingSettings } from '../core/models/invitation.model';
 import { SkeletonComponent } from '../core/components/skeleton.component';
 
+import { AmbientComponent } from './ambient/ambient.component';
 import { LandingNavComponent } from './nav.component';
 import { HeroComponent } from './sections/hero.component';
 import { StoryComponent } from './sections/story.component';
@@ -21,6 +22,7 @@ import { FooterComponent } from './sections/footer.component';
   selector: 'app-landing',
   standalone: true,
   imports: [
+    AmbientComponent,
     LandingNavComponent,
     HeroComponent,
     StoryComponent,
@@ -33,6 +35,9 @@ import { FooterComponent } from './sections/footer.component';
     SkeletonComponent,
   ],
   template: `
+    <!-- Global ambient atmosphere — always present -->
+    <app-ambient />
+
     <app-landing-nav [coupleNames]="settings()?.coupleNames ?? ''" />
 
     @if (loaded()) {
@@ -64,34 +69,34 @@ import { FooterComponent } from './sections/footer.component';
 })
 export class LandingComponent {
   private settingsSvc = inject(SettingsService);
-  private eventSvc = inject(EventService);
+  private eventSvc    = inject(EventService);
 
   readonly settings = toSignal(this.settingsSvc.get(), { initialValue: undefined });
-  readonly events = toSignal(this.eventSvc.listEvents(), { initialValue: [] });
+  readonly events   = toSignal(this.eventSvc.listEvents(), { initialValue: [] });
 
   readonly loaded = computed(() => this.settings() !== undefined || true);
 
   readonly effective = computed<WeddingSettings>(() => this.settings() ?? this.fallback());
 
   private fallback(): WeddingSettings {
-    const now = new Date();
+    const now     = new Date();
     const wedding = new Date(now.getFullYear() + 1, 8, 13);
-    const rsvp = new Date(now.getFullYear() + 1, 7, 1);
+    const rsvp    = new Date(now.getFullYear() + 1, 7, 1);
     return {
-      coupleNames: 'Coming Soon',
-      person1Name: '',
-      person2Name: '',
-      weddingDate: Timestamp.fromDate(wedding),
-      rsvpDeadline: Timestamp.fromDate(rsvp),
-      ceremonyTime: '4:00 PM',
-      receptionTime: '6:00 PM',
-      venue: 'Venue TBD',
-      venueAddress: '',
-      websiteUrl: '',
-      story: [],
-      faq: [],
-      accommodation: [],
-      galleryPhotoUrls: [],
+      coupleNames:     'Coming Soon',
+      person1Name:     '',
+      person2Name:     '',
+      weddingDate:     Timestamp.fromDate(wedding),
+      rsvpDeadline:    Timestamp.fromDate(rsvp),
+      ceremonyTime:    '4:00 PM',
+      receptionTime:   '6:00 PM',
+      venue:           'Venue TBD',
+      venueAddress:    '',
+      websiteUrl:      '',
+      story:           [],
+      faq:             [],
+      accommodation:   [],
+      galleryPhotoUrls:[],
     };
   }
 }

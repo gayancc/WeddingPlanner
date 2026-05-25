@@ -30,7 +30,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
         </div>
 
         <div class="faq-list" #listEl>
-          @for (item of effective(); track item.question; let i = $index) {
+          @for (item of effective(); track i; let i = $index) {
             <div class="faq-row" [class.faq-row--open]="openIdx() === i" #row>
               <button
                 class="faq-q"
