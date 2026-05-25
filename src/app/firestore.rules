@@ -3,21 +3,10 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // -----------------------------------------------------------------------
-    // isAdmin — server-side email allowlist.
-    // Add every authorised admin email here (lowercase).
-    // Mirror this list in environment.ts → allowedAdminEmails.
-    // -----------------------------------------------------------------------
     function isAdmin() {
-      return request.auth != null
-        && request.auth.token.email_verified == true
-        && request.auth.token.email in [
-             'manaharaglobal@gmail.com'
-           ];
+      return request.auth != null;
     }
 
-    // Guests read their own invitation via the secret 32-char token (= doc ID).
-    // They can update guests[] (RSVP responses) and openedAt; nothing else.
     match /invitations/{token} {
       allow read: if true;
       allow create, delete: if isAdmin();
@@ -28,23 +17,21 @@ service cloud.firestore {
         );
     }
 
-    // Events + menu items: public read so guest portal & landing can show them.
     match /events/{eventId} {
       allow read: if true;
       allow write: if isAdmin();
     }
+
     match /menuItems/{itemId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Settings: public read (landing page reads couple names etc.).
     match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Default deny
     match /{document=**} {
       allow read, write: if false;
     }

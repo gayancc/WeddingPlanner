@@ -125,7 +125,7 @@ export class InvitationService {
     const url = this.inviteUrl(invitation.token);
     const toName = invitation.guests.map((g) => `${g.firstName} ${g.lastName}`).join(' & ');
 
-    await emailjs.send(
+    const result = await emailjs.send(
       environment.emailjs.serviceId,
       environment.emailjs.templateId,
       {
@@ -139,6 +139,10 @@ export class InvitationService {
       },
       { publicKey: environment.emailjs.publicKey },
     );
+
+    if (result.status !== 200) {
+      throw new Error(`EmailJS error ${result.status}: ${result.text}`);
+    }
 
     await this.markSent(invitation.token);
   }
