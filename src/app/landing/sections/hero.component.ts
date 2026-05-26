@@ -15,24 +15,6 @@ import { DatePipe, NgStyle } from '@angular/common';
 import { WeddingSettings } from '../../core/models/invitation.model';
 import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
 
-const PETALS = [
-  { id:  0, x:  6, y: 12, w: 11, h: 19, opacity: 0.20, rot:  20, floatY: 16, floatDur: 5.2, white: true  },
-  { id:  1, x: 20, y: 58, w:  8, h: 14, opacity: 0.15, rot: -30, floatY: 12, floatDur: 6.8, white: true  },
-  { id:  2, x: 32, y: 22, w: 13, h: 22, opacity: 0.13, rot:  50, floatY: 18, floatDur: 7.4, white: true  },
-  { id:  3, x: 14, y: 72, w: 10, h: 18, opacity: 0.16, rot: -15, floatY: 10, floatDur: 5.8, white: true  },
-  { id:  4, x: 26, y: 88, w:  9, h: 16, opacity: 0.12, rot:  40, floatY: 14, floatDur: 8.2, white: true  },
-  { id:  5, x:  8, y: 42, w:  7, h: 12, opacity: 0.18, rot: -55, floatY: 20, floatDur: 6.0, white: true  },
-  { id:  6, x: 40, y:  8, w: 12, h: 21, opacity: 0.11, rot:  70, floatY: 15, floatDur: 7.0, white: true  },
-  { id:  7, x: 44, y: 48, w:  8, h: 14, opacity: 0.14, rot: -25, floatY: 11, floatDur: 9.0, white: true  },
-  { id:  8, x: 58, y: 18, w: 10, h: 18, opacity: 0.13, rot:  35, floatY: 14, floatDur: 6.4, white: false },
-  { id:  9, x: 72, y: 62, w:  9, h: 16, opacity: 0.10, rot: -45, floatY: 16, floatDur: 7.8, white: false },
-  { id: 10, x: 84, y: 28, w: 12, h: 21, opacity: 0.09, rot:  60, floatY: 20, floatDur: 5.6, white: false },
-  { id: 11, x: 66, y: 82, w:  8, h: 14, opacity: 0.11, rot: -20, floatY: 12, floatDur: 8.6, white: false },
-  { id: 12, x: 90, y: 14, w: 11, h: 19, opacity: 0.08, rot:  80, floatY: 18, floatDur: 6.2, white: false },
-  { id: 13, x: 78, y: 50, w:  7, h: 12, opacity: 0.12, rot: -65, floatY: 10, floatDur: 7.2, white: false },
-  { id: 14, x: 94, y: 74, w: 10, h: 18, opacity: 0.07, rot:  25, floatY: 16, floatDur: 9.4, white: false },
-  { id: 15, x: 60, y: 92, w:  9, h: 16, opacity: 0.10, rot: -40, floatY: 13, floatDur: 5.4, white: false },
-];
 
 @Component({
   selector: 'app-landing-hero',
@@ -143,22 +125,6 @@ const PETALS = [
         <span class="scroll-label">Scroll</span>
       </button>
 
-      <!-- Floating petals -->
-      @for (p of petals; track p.id) {
-        <span
-          class="hero-petal"
-          [class.hero-petal--dark]="!p.white"
-          [style.left.%]="p.x"
-          [style.top.%]="p.y"
-          [style.width.px]="p.w"
-          [style.height.px]="p.h"
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 8 14" fill="currentColor">
-            <path d="M4 1 C7 3 7 11 4 13 C1 11 1 3 4 1Z"/>
-          </svg>
-        </span>
-      }
 
     </section>
   `,
@@ -419,19 +385,6 @@ const PETALS = [
       50%       { opacity: 1;   transform: scaleY(1)   translateY(0); }
     }
 
-    /* ── Floating petals ── */
-    .hero-petal {
-      position: absolute;
-      pointer-events: none;
-      opacity: 0;
-      will-change: transform;
-      z-index: 2;
-      display: block;
-      color: rgba(255,255,255,0.6);
-    }
-    .hero-petal--dark { color: rgba(44,74,46,0.45); }
-    .hero-petal svg { width: 100%; height: 100%; display: block; }
-
     /* ── Mobile ── */
     @media (max-width: 768px) {
       .hero {
@@ -484,7 +437,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly seconds = signal(0);
 
   readonly petalAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-  readonly petals = PETALS;
 
   get photoBgStyle(): object {
     const url = this.settings.heroPhotoUrl;
@@ -635,30 +587,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
         duration: 5.5, repeat: -1, yoyo: true, ease: 'sine.inOut',
       });
 
-      // ── Floating petals ──
-      el.querySelectorAll<HTMLElement>('.hero-petal').forEach((petal, i) => {
-        const p = PETALS[i];
-        if (!p) return;
-        gsap.set(petal, { rotation: p.rot, transformOrigin: '50% 60%' });
-        // Fade in staggered
-        gsap.to(petal, {
-          opacity: p.opacity,
-          duration: 1.4,
-          delay: 1.0 + i * 0.15,
-          ease: 'power2.out',
-        });
-        // Continuous gentle float
-        gsap.to(petal, {
-          y: -p.floatY,
-          x: i % 2 === 0 ? 7 : -7,
-          rotation: p.rot + (i % 2 === 0 ? 18 : -18),
-          duration: p.floatDur,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: i * 0.28,
-        });
-      });
 
     }, el);
   }

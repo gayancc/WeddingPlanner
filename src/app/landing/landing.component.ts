@@ -9,6 +9,9 @@ import { WeddingSettings } from '../core/models/invitation.model';
 import { SkeletonComponent } from '../core/components/skeleton.component';
 
 import { AmbientComponent } from './ambient/ambient.component';
+import { FloatingPetalsComponent } from './atmosphere/floating-petals.component';
+import { FloatingFlowersComponent } from './atmosphere/floating-flowers.component';
+import { GlowParticlesComponent } from './atmosphere/glow-particles.component';
 import { LandingNavComponent } from './nav.component';
 import { HeroComponent } from './sections/hero.component';
 import { StoryComponent } from './sections/story.component';
@@ -24,6 +27,9 @@ import { FooterComponent } from './sections/footer.component';
   standalone: true,
   imports: [
     AmbientComponent,
+    FloatingPetalsComponent,
+    FloatingFlowersComponent,
+    GlowParticlesComponent,
     LandingNavComponent,
     HeroComponent,
     StoryComponent,
@@ -36,7 +42,10 @@ import { FooterComponent } from './sections/footer.component';
     SkeletonComponent,
   ],
   template: `
-    <!-- Global ambient atmosphere — always present -->
+    <!-- Global atmosphere layers (z-index 1–2, pointer-events:none) -->
+    <app-glow-particles />
+    <app-floating-petals />
+    <app-floating-flowers />
     <app-ambient />
 
     <app-landing-nav [coupleNames]="effective().coupleNames" />

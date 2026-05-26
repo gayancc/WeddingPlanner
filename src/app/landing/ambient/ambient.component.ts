@@ -22,11 +22,6 @@ interface FairyDatum {
   driftX: number; driftY: number;
 }
 
-interface PetalDatum {
-  id: number; x: number; size: number;
-  fallDur: number; startDelay: number; dir: 1 | -1; swing: number;
-}
-
 const BOKEH: BokehDatum[] = [
   { id: 0,  x: 5,  y: 12, size: 68, opacity: 0.050, blur: 18, gold: false, driftX: -18, driftY: 12,  dur: 9  },
   { id: 1,  x: 88, y: 8,  size: 44, opacity: 0.045, blur: 12, gold: true,  driftX: 22,  driftY: -14, dur: 11 },
@@ -65,15 +60,6 @@ const FAIRY: FairyDatum[] = [
   { id: 13, x: 18, y: 58, size: 4, twinkleDur: 2.7, twinkleDelay: 0.9, driftX: 8,   driftY: -6 },
 ];
 
-const PETALS: PetalDatum[] = [
-  { id: 0, x: 8,  size: 16, fallDur: 20, startDelay: 0,  dir: 1,  swing: 35 },
-  { id: 1, x: 22, size: 13, fallDur: 24, startDelay: 4,  dir: -1, swing: 28 },
-  { id: 2, x: 45, size: 19, fallDur: 18, startDelay: 8,  dir: 1,  swing: 42 },
-  { id: 3, x: 62, size: 14, fallDur: 22, startDelay: 2,  dir: -1, swing: 32 },
-  { id: 4, x: 78, size: 20, fallDur: 19, startDelay: 11, dir: 1,  swing: 38 },
-  { id: 5, x: 91, size: 15, fallDur: 26, startDelay: 6,  dir: -1, swing: 25 },
-];
-
 @Component({
   selector: 'app-ambient',
   standalone: true,
@@ -109,16 +95,6 @@ const PETALS: PetalDatum[] = [
         </div>
       }
 
-      <!-- Petals — drift from top to bottom -->
-      @for (p of petals; track p.id) {
-        <div
-          class="petal"
-          #petalEl
-          [style.left.%]="p.x"
-          [style.width.px]="p.size"
-          [style.height.px]="p.size * 1.65">
-        </div>
-      }
 
     </div>
   `,
@@ -150,35 +126,17 @@ const PETALS: PetalDatum[] = [
         transform: translateZ(0);
       }
 
-      /* Petals — soft elongated shapes */
-      .petal {
-        position: absolute;
-        top: -60px;
-        left: 0;
-        background: linear-gradient(
-          135deg,
-          rgba(224, 202, 160, 0.22),
-          rgba(201, 168, 108, 0.14)
-        );
-        border-radius: 50% 0 50% 0;
-        will-change: transform, opacity;
-        transform: translateZ(0);
-        opacity: 0;
-      }
     `,
   ],
 })
 export class AmbientComponent implements AfterViewInit, OnDestroy {
-  readonly bokeh  = BOKEH;
-  readonly fairy  = FAIRY;
-  readonly petals = PETALS;
+  readonly bokeh = BOKEH;
+  readonly fairy = FAIRY;
 
   @ViewChildren('bokehEl') bokehEls!: QueryList<ElementRef<HTMLElement>>;
   @ViewChildren('fairyEl') fairyEls!: QueryList<ElementRef<HTMLElement>>;
-  @ViewChildren('petalEl') petalEls!: QueryList<ElementRef<HTMLElement>>;
 
   private ctx?: gsap.Context;
-  private petalTimelines: gsap.core.Timeline[] = [];
 
   ngAfterViewInit() {
     initGsap();
@@ -186,10 +144,7 @@ export class AmbientComponent implements AfterViewInit, OnDestroy {
     this.animate();
   }
 
-  ngOnDestroy() {
-    this.petalTimelines.forEach((tl) => tl.kill());
-    this.ctx?.revert();
-  }
+  ngOnDestroy() { this.ctx?.revert(); }
 
   private animate() {
     this.ctx = gsap.context(() => {
@@ -237,42 +192,5 @@ export class AmbientComponent implements AfterViewInit, OnDestroy {
       });
 
     });
-
-    // ── Petal fall ──────────────────────────────────────────
-    // Managed outside GSAP context so recursive callbacks work cleanly
-    this.petalEls.forEach((elRef, i) => {
-      const p = this.petals[i];
-      gsap.delayedCall(p.startDelay, () => this.runPetal(elRef.nativeElement, p));
-    });
-  }
-
-  private runPetal(el: HTMLElement, p: PetalDatum) {
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const startX = (p.x / 100) * vw;
-
-    const tl = gsap.timeline({
-      onComplete: () => {
-        this.petalTimelines = this.petalTimelines.filter((t) => t !== tl);
-        this.runPetal(el, p);
-      },
-    });
-
-    this.petalTimelines.push(tl);
-
-    tl.set(el, { x: startX, y: -60, rotation: 0, opacity: 0 })
-      .to(el, { opacity: 0.18, duration: 1.5, ease: 'power2.in' })
-      .to(
-        el,
-        {
-          y: vh + 80,
-          x: startX + p.dir * p.swing,
-          rotation: p.dir * (200 + p.id * 35),
-          duration: p.fallDur,
-          ease: 'none',
-        },
-        0,
-      )
-      .to(el, { opacity: 0, duration: 2.5, ease: 'power2.out' }, `-=3`);
   }
 }
