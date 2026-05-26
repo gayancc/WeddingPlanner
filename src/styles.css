@@ -29,6 +29,18 @@
   /* Typography */
   --font-serif: 'Playfair Display', Georgia, serif;
   --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-script: 'Dancing Script', 'Brush Script MT', cursive;
+
+  /* Landing page botanical palette */
+  --lc-bg:         #F5F2ED;
+  --lc-green:      #2C4A2E;
+  --lc-green-mid:  #4A7C59;
+  --lc-green-soft: rgba(44, 74, 46, 0.07);
+  --lc-gold:       #C9A86C;
+  --lc-text:       #1C1C1C;
+  --lc-muted:      #6B6B6B;
+  --lc-surface:    #FFFFFF;
+  --lc-border:     rgba(44, 74, 46, 0.13);
 
   /* Border radius */
   --radius-sm: 6px;

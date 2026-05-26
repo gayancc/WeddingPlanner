@@ -121,9 +121,8 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
   styles: [`
     .gallery {
       padding: 120px 0 60px;
-      background: var(--color-bg);
-      position: relative;
-      overflow: hidden;
+      background: var(--lc-bg, #F5F2ED);
+      position: relative; overflow: hidden;
     }
 
     .gallery-inner {
@@ -138,19 +137,16 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
 
     .gallery-eyebrow {
       display: flex; align-items: center; justify-content: center;
-      gap: 18px; font-size: 10px; letter-spacing: .34em;
-      text-transform: uppercase; color: var(--color-gold); margin: 0 0 18px;
+      gap: 18px; font-size: 10px; letter-spacing: .30em;
+      text-transform: uppercase; color: var(--lc-green-mid, #4A7C59); margin: 0 0 18px;
     }
 
-    .eyebrow-rule {
-      display: block; width: 36px; height: 1px;
-      background: currentColor; opacity: .55;
-    }
+    .eyebrow-rule { display: block; width: 36px; height: 1px; background: rgba(44,74,46,.25); }
 
     .gallery-title {
       font-family: var(--font-serif);
-      font-size: clamp(42px, 7vw, 72px); font-weight: 700;
-      color: var(--color-fg); letter-spacing: -0.02em;
+      font-size: clamp(40px, 7vw, 68px); font-weight: 600;
+      color: var(--lc-text, #1C1C1C); letter-spacing: -.02em;
     }
 
     /* ── 3-column parallax grid ── */
@@ -205,8 +201,8 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       position: absolute; inset: 0;
       background: linear-gradient(
         to top,
-        rgba(25,37,25,.70) 0%,
-        rgba(25,37,25,.12) 50%,
+        rgba(44,74,46,.72) 0%,
+        rgba(44,74,46,.14) 50%,
         transparent 100%
       );
       opacity: 0;

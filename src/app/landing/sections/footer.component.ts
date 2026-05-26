@@ -93,7 +93,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
   `,
   styles: [`
     .footer {
-      background: var(--color-warm-dark);
+      background: var(--lc-green, #2C4A2E);
       position: relative; overflow: hidden; padding: 0;
     }
 
@@ -104,7 +104,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       width: 700px; height: 350px;
       background: radial-gradient(
         ellipse 70% 60% at 50% 0%,
-        rgba(201,168,108,.09) 0%, transparent 70%
+        rgba(201,168,108,.10) 0%, transparent 70%
       );
       pointer-events: none;
     }
@@ -122,9 +122,9 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       width: 100%; height: 1px;
       background: linear-gradient(to right,
         transparent 0%,
-        rgba(201,168,108,.4) 30%,
-        rgba(201,168,108,.6) 50%,
-        rgba(201,168,108,.4) 70%,
+        rgba(255,255,255,.15) 30%,
+        rgba(201,168,108,.5) 50%,
+        rgba(255,255,255,.15) 70%,
         transparent 100%
       );
       transform-origin: left;

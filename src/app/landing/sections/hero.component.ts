@@ -10,417 +10,437 @@ import {
   QueryList,
   signal,
   computed,
-  HostListener,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgStyle } from '@angular/common';
 import { WeddingSettings } from '../../core/models/invitation.model';
 import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
-
-const PARTICLES = [
-  { id: 0,  x: 8,  y: 15, size: 5,  opacity: 0.25 },
-  { id: 1,  x: 18, y: 72, size: 3,  opacity: 0.18 },
-  { id: 2,  x: 30, y: 40, size: 7,  opacity: 0.20 },
-  { id: 3,  x: 45, y: 82, size: 4,  opacity: 0.22 },
-  { id: 4,  x: 60, y: 22, size: 6,  opacity: 0.15 },
-  { id: 5,  x: 72, y: 58, size: 3,  opacity: 0.28 },
-  { id: 6,  x: 85, y: 35, size: 8,  opacity: 0.16 },
-  { id: 7,  x: 92, y: 75, size: 4,  opacity: 0.20 },
-  { id: 8,  x: 12, y: 88, size: 5,  opacity: 0.18 },
-  { id: 9,  x: 55, y: 10, size: 3,  opacity: 0.24 },
-  { id: 10, x: 78, y: 90, size: 6,  opacity: 0.14 },
-  { id: 11, x: 38, y: 60, size: 4,  opacity: 0.20 },
-  { id: 12, x: 65, y: 48, size: 5,  opacity: 0.17 },
-  { id: 13, x: 22, y: 30, size: 3,  opacity: 0.22 },
-];
 
 @Component({
   selector: 'app-landing-hero',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, NgStyle],
   template: `
     <section id="top" class="hero" #heroEl>
 
-      <!-- Parallax background layer -->
-      <div class="hero-bg" #heroBg
-        [style.background-image]="bgImage()"
-        [class.hero-bg--gradient]="!settings.heroPhotoUrl">
+      <!-- ─── Left: photo panel ─── -->
+      <div class="hero-photo" #photoEl>
+        <div class="photo-bg" [ngStyle]="photoBgStyle"></div>
+        <!-- Organic green paint-stroke accent -->
+        <svg class="photo-stroke" viewBox="0 0 260 200" fill="none" aria-hidden="true" preserveAspectRatio="none">
+          <path d="M0 160 Q60 120 130 140 Q200 160 260 120 L260 200 L0 200 Z"
+                fill="rgba(44,74,46,.55)"/>
+          <path d="M0 178 Q80 155 160 170 Q220 180 260 155 L260 200 L0 200 Z"
+                fill="rgba(44,74,46,.85)"/>
+        </svg>
+        <!-- Right-edge fade into panel -->
+        <div class="photo-fade" aria-hidden="true"></div>
       </div>
 
-      <!-- Atmospheric overlays -->
-      <div class="hero-overlay"></div>
-      <div class="hero-vignette"></div>
-      <div class="hero-glow"></div>
+      <!-- ─── Right: content panel ─── -->
+      <div class="hero-panel" #panelEl>
 
-      <!-- Mouse-follow warm light -->
-      <div class="hero-mouse-light" #mouseLightEl aria-hidden="true"></div>
+        <!-- Leaf cluster top-right -->
+        <svg class="deco-leaf" viewBox="0 0 140 160" fill="none" aria-hidden="true">
+          <path d="M110 10 Q140 50 100 80 Q70 100 50 70 Q30 45 60 20 Q80 5 110 10Z"
+                fill="rgba(44,74,46,.09)" stroke="rgba(44,74,46,.18)" stroke-width="1"/>
+          <path d="M95 5 Q130 30 115 65 Q100 90 75 72 Q55 56 70 28 Q82 8 95 5Z"
+                fill="rgba(44,74,46,.06)" stroke="rgba(44,74,46,.14)" stroke-width="1"/>
+          <path d="M70 30 Q65 20 80 8" stroke="rgba(44,74,46,.22)" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M90 55 Q95 42 112 35" stroke="rgba(44,74,46,.18)" stroke-width="1" stroke-linecap="round"/>
+          <path d="M68 72 Q55 80 42 100 Q35 115 48 128 Q58 140 72 130 Q88 118 82 100 Q78 86 68 72Z"
+                fill="rgba(201,168,108,.08)" stroke="rgba(201,168,108,.20)" stroke-width="1"/>
+          <path d="M56 72 L70 128" stroke="rgba(201,168,108,.18)" stroke-width="1" stroke-linecap="round"/>
+        </svg>
 
-      <!-- Floating gold particles -->
-      @for (p of particles; track p.id) {
-        <div
-          class="hero-particle"
-          #particle
-          [style.left.%]="p.x"
-          [style.top.%]="p.y"
-          [style.width.px]="p.size"
-          [style.height.px]="p.size"
-          [style.opacity]="p.opacity">
-        </div>
-      }
-
-      <!-- Main content -->
-      <div class="hero-content" #contentEl>
-
-        <div class="hero-eyebrow" #eyebrow>
-          <span class="eyebrow-rule"></span>
-          <span class="eyebrow-text">We Are Getting Married</span>
-          <span class="eyebrow-rule"></span>
-        </div>
-
-        <!-- Character-split couple names -->
-        <h1 class="hero-names" #namesEl>
-          @for (ch of nameChars; track $index) {
-            <span class="name-char" [class.name-space]="ch === ' '">{{ ch }}</span>
+        <!-- Floral accent bottom-left -->
+        <svg class="deco-floral" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+          <circle cx="60" cy="60" r="18" fill="rgba(44,74,46,.07)" stroke="rgba(44,74,46,.16)" stroke-width="1"/>
+          <circle cx="60" cy="60" r="8" fill="rgba(201,168,108,.15)"/>
+          @for (angle of petalAngles; track angle) {
+            <ellipse cx="60" cy="36" rx="7" ry="14"
+                     fill="rgba(44,74,46,.07)" stroke="rgba(44,74,46,.14)" stroke-width="1"
+                     [attr.transform]="'rotate(' + angle + ', 60, 60)'"/>
           }
-        </h1>
+        </svg>
 
-        @if (settings.weddingDate) {
-          <p class="hero-date" #dateEl>
-            {{ settings.weddingDate.toDate() | date: 'EEEE · MMMM d, y' }}
+        <!-- Content -->
+        <div class="hero-content" #contentEl>
+
+          <p class="hero-eyebrow" #eyebrowEl>
+            <span class="eyebrow-rule"></span>
+            <span>Wedding Of</span>
+            <span class="eyebrow-rule"></span>
           </p>
-        }
 
-        <p class="hero-venue" #venueEl>{{ settings.venue }}</p>
+          <h1 class="hero-names" #namesEl>{{ settings.coupleNames || 'Her &amp; Him' }}</h1>
 
-        <div class="hero-rule" #ruleEl>
-          <span class="rule-line"></span>
-          <span class="rule-gem">✦</span>
-          <span class="rule-line"></span>
-        </div>
+          @if (settings.weddingDate) {
+            <p class="hero-date" #dateEl>
+              {{ settings.weddingDate.toDate() | date: 'MMMM d, y' }}
+            </p>
+          }
 
-        <!-- Glassmorphic countdown -->
-        <div class="hero-countdown" #countdownEl>
-          @for (unit of countdownUnits(); track unit.label) {
-            <div class="cu">
-              <div class="cu-glass">
-                <span class="cu-num">{{ unit.value }}</span>
-              </div>
-              <span class="cu-lbl">{{ unit.label }}</span>
+          @if (settings.venue) {
+            <p class="hero-venue" #venueEl>{{ settings.venue }}</p>
+          }
+
+          <!-- Ornament divider -->
+          <div class="hero-ornament" #ornEl aria-hidden="true">
+            <span class="orn-line"></span>
+            <span class="orn-gem">✦</span>
+            <span class="orn-line"></span>
+          </div>
+
+          <!-- Countdown -->
+          @if (settings.weddingDate) {
+            <div class="hero-countdown" #countdownEl>
+              @for (unit of countdownUnits(); track unit.label) {
+                <div class="cu-tile" #tile>
+                  <span class="cu-num">{{ unit.value }}</span>
+                  <span class="cu-label">{{ unit.label }}</span>
+                </div>
+                @if (!$last) { <span class="cu-sep">·</span> }
+              }
             </div>
           }
+
+          <!-- CTA buttons -->
+          <div class="hero-cta" #ctaEl>
+            <a href="#story" class="cta-primary">Our Story</a>
+            <a href="#schedule" class="cta-outline">View Schedule</a>
+          </div>
+
         </div>
 
-        <!-- CTA -->
-        <a href="#schedule" class="hero-cta" #ctaEl>
-          <span class="cta-fill"></span>
-          <span class="cta-label">Explore Our Day</span>
-          <svg class="cta-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 3v10M3 9l5 5 5-5" stroke="currentColor" stroke-width="1.5"
-              stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </a>
+        <!-- Social links or website url -->
+        @if (settings.websiteUrl) {
+          <p class="hero-url" #urlEl>{{ settings.websiteUrl }}</p>
+        }
       </div>
 
-      <!-- Scroll indicator -->
-      <div class="hero-scroll" #scrollEl aria-hidden="true">
-        <div class="scroll-mouse">
-          <div class="scroll-wheel"></div>
-        </div>
+      <!-- Scroll indicator — vertically centered on the seam -->
+      <button class="hero-scroll" #scrollEl (click)="scrollDown()" aria-label="Scroll to content">
+        <span class="scroll-line"></span>
         <span class="scroll-label">Scroll</span>
-      </div>
+      </button>
 
     </section>
   `,
   styles: [`
+    /* ── Shell ── */
     .hero {
       position: relative;
       min-height: 100svh;
+      display: grid;
+      grid-template-columns: 52fr 48fr;
+      overflow: hidden;
+    }
+
+    /* ── Photo panel ── */
+    .hero-photo {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .photo-bg {
+      position: absolute; inset: -6%;
+      /* Gradient always visible; photo layers on top when set */
+      background-image: linear-gradient(155deg, #1e3820 0%, #2C4A2E 30%, #4A7C59 60%, #8baf8c 82%, #c5d5b8 100%);
+      background-size: cover;
+      background-position: center 20%;
+      transform-origin: center;
+    }
+
+    .photo-stroke {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      width: 100%; height: 200px;
+      pointer-events: none;
+    }
+
+    .photo-fade {
+      position: absolute; right: 0; top: 0; bottom: 0; width: 160px;
+      background: linear-gradient(to right, transparent, var(--lc-bg, #F5F2ED));
+      pointer-events: none;
+    }
+
+    /* ── Content panel ── */
+    .hero-panel {
+      position: relative;
+      background: var(--lc-bg, #F5F2ED);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 100px 56px 80px 32px;
       overflow: hidden;
-      background: #16120E;
     }
 
-    /* ── Background ── */
-    .hero-bg {
+    /* ── Decorative elements ── */
+    .deco-leaf {
       position: absolute;
-      inset: -15%;
-      background-size: cover;
-      background-position: center;
-      will-change: transform;
-      transform: translateZ(0);
-    }
-
-    .hero-bg--gradient {
-      background: linear-gradient(135deg, #192519 0%, #2a3d2a 40%, #3c5534 70%, #2b3e2b 100%);
-    }
-
-    /* ── Atmospheric layers ── */
-    .hero-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(
-        175deg,
-        rgba(16,12,8,.20) 0%,
-        rgba(16,12,8,.50) 45%,
-        rgba(16,12,8,.82) 100%
-      );
-      z-index: 1;
-    }
-
-    .hero-vignette {
-      position: absolute; inset: 0;
-      background: radial-gradient(
-        ellipse 100% 100% at 50% 50%,
-        transparent 35%, rgba(16,12,8,.55) 100%
-      );
-      z-index: 2;
-    }
-
-    .hero-glow {
-      position: absolute; inset: 0;
-      background: radial-gradient(
-        ellipse 70% 50% at 50% 55%,
-        rgba(201,168,108,.09) 0%, transparent 70%
-      );
-      z-index: 3;
-      animation: breathe-glow 7s ease-in-out infinite;
-    }
-
-    /* ── Mouse-follow warm light ── */
-    .hero-mouse-light {
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 600px; height: 600px;
-      margin: -300px 0 0 -300px;
-      border-radius: 50%;
-      background: radial-gradient(
-        circle,
-        rgba(201,168,108,.10) 0%,
-        rgba(201,168,108,.04) 40%,
-        transparent 70%
-      );
+      top: -10px; right: -10px;
+      width: 160px; height: 180px;
       pointer-events: none;
-      z-index: 4;
-      will-change: transform;
+      opacity: 0;
     }
 
-    /* ── Particles ── */
-    .hero-particle {
+    .deco-floral {
       position: absolute;
-      background: var(--color-gold);
-      border-radius: 50%;
-      z-index: 4;
-      will-change: transform;
-      filter: blur(0.5px);
+      bottom: 60px; left: 20px;
+      width: 110px; height: 110px;
+      pointer-events: none;
+      opacity: 0;
     }
 
     /* ── Content ── */
     .hero-content {
-      position: relative;
-      z-index: 10;
-      text-align: center;
-      padding: 120px 24px 80px;
-      max-width: 900px;
+      max-width: 400px;
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      will-change: transform, opacity;
+      text-align: center;
     }
 
     /* Eyebrow */
     .hero-eyebrow {
-      display: flex; align-items: center; gap: 18px;
-      margin-bottom: 32px; opacity: 0;
+      display: flex; align-items: center; gap: 12px;
+      justify-content: center;
+      font-size: 11px; letter-spacing: .22em;
+      text-transform: uppercase; font-weight: 500;
+      color: var(--lc-green, #2C4A2E);
+      margin: 0 0 16px;
+      opacity: 0;
     }
 
     .eyebrow-rule {
-      display: block; width: 44px; height: 1px;
-      background: rgba(201,168,108,.55);
+      flex: 1; max-width: 48px; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(44,74,46,.35));
+    }
+    .eyebrow-rule:last-child {
+      background: linear-gradient(to left, transparent, rgba(44,74,46,.35));
     }
 
-    .eyebrow-text {
-      font-size: 10px; letter-spacing: .38em;
-      text-transform: uppercase; color: var(--color-gold-soft);
-      white-space: nowrap;
-    }
-
-    /* ── Character-split names ── */
+    /* Script couple names */
     .hero-names {
-      font-family: var(--font-serif);
-      font-size: clamp(52px, 11vw, 116px);
-      font-weight: 700;
-      line-height: 1.0;
-      color: white;
-      letter-spacing: -0.02em;
-      margin: 0 0 22px;
-      text-shadow: 0 4px 48px rgba(0,0,0,.45);
-    }
-
-    .name-char {
-      display: inline-block;
-      will-change: transform, opacity;
-    }
-
-    .name-space {
-      display: inline-block;
-      width: 0.28em;
+      font-family: var(--font-script, 'Dancing Script', cursive);
+      font-size: clamp(48px, 7.5vw, 92px);
+      font-weight: 600;
+      color: var(--lc-text, #1C1C1C);
+      line-height: 1.05;
+      margin: 0 0 10px;
+      opacity: 0;
     }
 
     /* Date */
     .hero-date {
-      font-family: var(--font-serif); font-style: italic;
-      font-size: clamp(16px, 2.4vw, 22px);
-      color: var(--color-gold-soft);
-      margin: 0 0 8px; letter-spacing: .04em; opacity: 0;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: clamp(15px, 1.8vw, 18px);
+      color: var(--lc-green, #2C4A2E);
+      letter-spacing: .04em;
+      margin: 0 0 6px;
+      opacity: 0;
     }
 
     /* Venue */
     .hero-venue {
-      font-size: 12px; letter-spacing: .24em;
+      font-size: 11.5px; letter-spacing: .18em;
       text-transform: uppercase;
-      color: rgba(255,255,255,.55);
-      margin: 0 0 36px; opacity: 0;
+      color: var(--lc-muted, #6B6B6B);
+      margin: 0 0 28px;
+      opacity: 0;
     }
 
-    /* Ornamental rule */
-    .hero-rule {
-      display: flex; align-items: center; gap: 14px;
-      margin-bottom: 36px; opacity: 0;
+    /* Ornament */
+    .hero-ornament {
+      display: flex; align-items: center; gap: 12px;
+      justify-content: center;
+      margin-bottom: 28px;
+      opacity: 0;
     }
 
-    .rule-line {
-      display: block; width: 56px; height: 1px;
-      background: linear-gradient(to right, transparent, rgba(201,168,108,.5), transparent);
+    .orn-line {
+      flex: 1; max-width: 60px; height: 1px;
+      background: var(--lc-border, rgba(44,74,46,.13));
     }
 
-    .rule-gem { color: var(--color-gold); font-size: 14px; }
+    .orn-gem {
+      font-size: 12px; color: var(--lc-gold, #C9A86C);
+    }
 
     /* ── Countdown ── */
     .hero-countdown {
-      display: flex; gap: 14px; margin-bottom: 40px; opacity: 0;
+      display: flex; align-items: center;
+      justify-content: center; gap: 10px;
+      margin-bottom: 32px;
+      opacity: 0;
     }
 
-    .cu { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-
-    .cu-glass {
-      width: 72px; height: 72px; border-radius: 18px;
-      background: rgba(255,255,255,.055);
-      border: 1px solid rgba(255,255,255,.10);
-      backdrop-filter: blur(16px) saturate(150%);
-      -webkit-backdrop-filter: blur(16px) saturate(150%);
-      display: flex; align-items: center; justify-content: center;
-      transition: border-color 300ms, box-shadow 300ms;
-    }
-
-    .cu-glass:hover {
-      border-color: rgba(201,168,108,.35);
-      box-shadow: 0 0 20px rgba(201,168,108,.12);
+    .cu-tile {
+      background: var(--lc-surface, #fff);
+      border: 1px solid var(--lc-border, rgba(44,74,46,.13));
+      border-radius: var(--radius-md);
+      padding: 12px 16px 10px;
+      min-width: 64px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(44,74,46,.06), 0 8px 24px rgba(44,74,46,.04);
     }
 
     .cu-num {
-      font-family: var(--font-serif); font-size: 26px; font-weight: 700;
-      color: white; line-height: 1; font-variant-numeric: tabular-nums;
+      display: block;
+      font-family: var(--font-serif);
+      font-size: clamp(22px, 3vw, 30px);
+      font-weight: 600;
+      color: var(--lc-green, #2C4A2E);
+      line-height: 1;
     }
 
-    .cu-lbl {
-      font-size: 9px; letter-spacing: .22em;
-      text-transform: uppercase; color: var(--color-gold-dim);
+    .cu-label {
+      display: block;
+      font-size: 9px; letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--lc-muted, #6B6B6B);
+      margin-top: 4px;
     }
 
-    /* ── CTA ── */
+    .cu-sep {
+      font-size: 22px; color: var(--lc-gold, #C9A86C);
+      font-weight: 300; line-height: 1;
+      margin-top: -8px;
+    }
+
+    /* ── CTA buttons ── */
     .hero-cta {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 15px 42px;
-      border: 1px solid rgba(201,168,108,.6);
-      color: white; font-family: var(--font-serif);
-      font-size: 13px; letter-spacing: .14em;
-      text-transform: uppercase; border-radius: var(--radius-full);
-      position: relative; overflow: hidden;
+      display: flex; gap: 12px; justify-content: center;
+      flex-wrap: wrap;
       opacity: 0;
-      transition: border-color 300ms, color 300ms;
     }
 
-    .cta-fill {
-      position: absolute; inset: 0;
-      background: var(--color-gold);
-      transform: scaleX(0); transform-origin: left;
-      transition: transform 350ms var(--ease-cinematic);
-      border-radius: inherit;
+    .cta-primary {
+      display: inline-block;
+      padding: 13px 28px;
+      background: var(--lc-green, #2C4A2E);
+      color: white;
+      font-size: 12px; letter-spacing: .12em;
+      text-transform: uppercase; font-weight: 500;
+      border-radius: var(--radius-full);
+      transition: background 250ms var(--ease-smooth), transform 200ms;
     }
 
-    .hero-cta:hover .cta-fill { transform: scaleX(1); }
-    .hero-cta:hover { color: var(--color-fg); border-color: var(--color-gold); }
+    .cta-primary:hover {
+      background: var(--lc-green-mid, #4A7C59);
+      transform: translateY(-2px);
+    }
 
-    .cta-label, .cta-arrow { position: relative; z-index: 1; }
-    .cta-arrow { animation: float-down 2s ease-in-out infinite; }
+    .cta-outline {
+      display: inline-block;
+      padding: 12px 28px;
+      background: transparent;
+      color: var(--lc-green, #2C4A2E);
+      border: 1.5px solid var(--lc-green, #2C4A2E);
+      font-size: 12px; letter-spacing: .12em;
+      text-transform: uppercase; font-weight: 500;
+      border-radius: var(--radius-full);
+      transition: background 250ms var(--ease-smooth), color 250ms, transform 200ms;
+    }
 
-    @keyframes float-down {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(4px); }
+    .cta-outline:hover {
+      background: var(--lc-green-soft, rgba(44,74,46,.07));
+      transform: translateY(-2px);
+    }
+
+    /* ── Website url ── */
+    .hero-url {
+      position: absolute; bottom: 32px;
+      font-size: 11px; letter-spacing: .1em;
+      color: var(--lc-muted, #6B6B6B);
+      opacity: 0;
     }
 
     /* ── Scroll indicator ── */
     .hero-scroll {
-      position: absolute; bottom: 36px; left: 50%;
+      position: absolute;
+      bottom: 32px; left: 50%;
       transform: translateX(-50%);
-      z-index: 10; display: flex; flex-direction: column;
-      align-items: center; gap: 10px; opacity: 0;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      background: none; border: none; cursor: pointer;
+      color: var(--lc-muted, #6B6B6B);
+      opacity: 0;
+      z-index: 2;
     }
 
-    .scroll-mouse {
-      width: 22px; height: 36px;
-      border: 1.5px solid rgba(255,255,255,.28);
-      border-radius: 11px;
-      display: flex; align-items: flex-start;
-      justify-content: center; padding-top: 6px;
-    }
-
-    .scroll-wheel {
-      width: 2.5px; height: 7px;
-      background: rgba(255,255,255,.55);
-      border-radius: 3px;
-      animation: wheel 2s ease-in-out infinite;
-    }
-
-    @keyframes wheel {
-      0%   { opacity: 1; transform: translateY(0); }
-      80%  { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 0; }
+    .scroll-line {
+      width: 1px; height: 36px;
+      background: linear-gradient(to bottom, transparent, var(--lc-green, #2C4A2E));
+      animation: scroll-pulse 1.8s ease-in-out infinite;
     }
 
     .scroll-label {
-      font-size: 9px; letter-spacing: .3em;
-      text-transform: uppercase; color: rgba(255,255,255,.35);
+      font-size: 9px; letter-spacing: .18em;
+      text-transform: uppercase;
     }
 
-    @media (max-width: 540px) {
-      .hero-countdown { gap: 8px; }
-      .cu-glass { width: 58px; height: 58px; }
-      .cu-num { font-size: 20px; }
-      .eyebrow-rule { width: 28px; }
+    @keyframes scroll-pulse {
+      0%, 100% { opacity: 0.4; transform: scaleY(0.7) translateY(-4px); }
+      50%       { opacity: 1;   transform: scaleY(1)   translateY(0); }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .hero {
+        grid-template-columns: 1fr;
+        grid-template-rows: 45svh 1fr;
+        min-height: 100svh;
+      }
+
+      .photo-fade {
+        right: auto; left: 0; top: auto; bottom: 0; width: 100%; height: 80px;
+        background: linear-gradient(to bottom, transparent, var(--lc-bg, #F5F2ED));
+      }
+
+      .photo-stroke { height: 120px; }
+
+      .hero-panel {
+        padding: 40px 24px 80px;
+        justify-content: flex-start;
+      }
+
+      .hero-names { font-size: clamp(44px, 12vw, 64px); }
+
+      .cu-tile { min-width: 52px; padding: 10px 10px 8px; }
+      .cu-num  { font-size: 22px; }
+
+      .deco-leaf   { width: 110px; height: 120px; }
+      .deco-floral { display: none; }
+
+      .hero-scroll { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .hero-cta { flex-direction: column; align-items: center; }
+      .cta-primary, .cta-outline { width: 100%; max-width: 220px; text-align: center; }
     }
   `],
 })
 export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input({ required: true }) settings!: WeddingSettings;
 
-  @ViewChild('heroEl')       heroEl!:       ElementRef<HTMLElement>;
-  @ViewChild('heroBg')       heroBg!:       ElementRef<HTMLElement>;
-  @ViewChild('mouseLightEl') mouseLightEl!: ElementRef<HTMLElement>;
-  @ViewChild('contentEl')    contentEl!:    ElementRef<HTMLElement>;
-  @ViewChildren('particle')  particleEls!:  QueryList<ElementRef<HTMLElement>>;
+  @ViewChild('heroEl')    heroEl!:    ElementRef<HTMLElement>;
+  @ViewChild('photoEl')   photoEl!:   ElementRef<HTMLElement>;
+  @ViewChild('panelEl')   panelEl!:   ElementRef<HTMLElement>;
+  @ViewChild('contentEl') contentEl!: ElementRef<HTMLElement>;
+  @ViewChildren('tile')   tileEls!:   QueryList<ElementRef<HTMLElement>>;
 
   readonly days    = signal(0);
   readonly hours   = signal(0);
   readonly minutes = signal(0);
   readonly seconds = signal(0);
-  readonly particles = PARTICLES;
 
-  // Getter (not computed signal) so it re-evaluates when @Input settings changes.
-  // computed() only tracks Angular signal reads — plain @Input properties are invisible to it.
-  get nameChars(): string[] {
-    return (this.settings.coupleNames || 'Her & Him').split('');
+  readonly petalAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+
+  get photoBgStyle(): object {
+    const url = this.settings.heroPhotoUrl;
+    if (!url) return {};
+    const gradient = 'linear-gradient(155deg, #1e3820 0%, #2C4A2E 30%, #4A7C59 60%, #8baf8c 82%, #c5d5b8 100%)';
+    return { 'background-image': `url('${url}'), ${gradient}` };
   }
 
   readonly countdownUnits = computed(() => [
@@ -433,8 +453,8 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   private timer?: ReturnType<typeof setInterval>;
   private ctx?: gsap.Context;
 
-  bgImage(): string {
-    return this.settings.heroPhotoUrl ? `url('${this.settings.heroPhotoUrl}')` : '';
+  scrollDown() {
+    document.getElementById('story')?.scrollIntoView({ behavior: 'smooth' });
   }
 
   ngOnInit() {
@@ -452,44 +472,6 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     this.ctx?.revert();
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(e: MouseEvent) {
-    if (!this.heroEl) return;
-    const rect = this.heroEl.nativeElement.getBoundingClientRect();
-    // Only active when hero is visible
-    if (rect.bottom < 0 || rect.height === 0) return;
-
-    const cx = rect.width / 2;
-    const cy = rect.height / 2;
-    const dx = (e.clientX - rect.left - cx) / cx;  // −1 to 1
-    const dy = (e.clientY - rect.top - cy) / cy;
-
-    // Layer 1: background drifts with cursor (slow, same direction)
-    gsap.to(this.heroBg.nativeElement, {
-      x: dx * 22, y: dy * 14,
-      duration: 1.8, ease: 'power2.out', overwrite: 'auto',
-    });
-
-    // Layer 2: content shifts subtly with cursor
-    gsap.to(this.contentEl.nativeElement, {
-      x: dx * 7, y: dy * 4,
-      duration: 2.5, ease: 'power3.out', overwrite: 'auto',
-    });
-
-    // Layer 3: particles move opposite (depth illusion)
-    gsap.to('.hero-particle', {
-      x: -dx * 16, y: -dy * 10,
-      duration: 1.5, ease: 'power2.out', overwrite: 'auto',
-    });
-
-    // Mouse warm light tracks cursor precisely
-    gsap.to(this.mouseLightEl.nativeElement, {
-      x: e.clientX - rect.left - cx,
-      y: e.clientY - rect.top - cy,
-      duration: 0.55, ease: 'power1.out', overwrite: 'auto',
-    });
-  }
-
   private tick() {
     if (!this.settings.weddingDate) return;
     const diff = Math.max(0, this.settings.weddingDate.toDate().getTime() - Date.now());
@@ -503,105 +485,105 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
     const el = this.heroEl.nativeElement;
     if (typeof window === 'undefined') return;
 
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.ctx = gsap.context(() => {
 
-      if (prefersReduced) {
-        gsap.set(['.hero-eyebrow', '.name-char', '.hero-date', '.hero-venue',
-          '.hero-rule', '.hero-countdown', '.hero-cta', '.hero-scroll'],
-          { opacity: 1, y: 0, yPercent: 0, rotateZ: 0 });
+      if (reduced) {
+        gsap.set(['.hero-eyebrow', '.hero-names', '.hero-date', '.hero-venue',
+          '.hero-ornament', '.hero-countdown', '.hero-cta', '.hero-scroll',
+          '.hero-url', '.deco-leaf', '.deco-floral', '.photo-bg'],
+          { opacity: 1, y: 0, scale: 1, rotate: 0 });
         return;
       }
 
-      // ── Initial states for character split ──
-      gsap.set('.name-char:not(.name-space)', {
-        opacity: 0,
-        yPercent: 110,
-        rotateZ: (i: number) => i % 2 === 0 ? 7 : -7,
+      // ── Photo: scale in from slightly zoomed ──
+      gsap.fromTo('.photo-bg',
+        { scale: 1.08, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 1.4, ease: 'power3.out' }
+      );
+
+      // ── Decorative elements ──
+      gsap.to('.deco-leaf', {
+        opacity: 1, rotate: 0,
+        duration: 1.2, ease: 'power3.out', delay: 0.5,
       });
-      gsap.set('.name-space', { opacity: 1 });
+      gsap.set('.deco-leaf', { opacity: 0, rotate: -12 });
 
-      // ── Cinematic entrance timeline ──
-      const tl = gsap.timeline({ delay: 0.25 });
-
-      tl.to('.hero-eyebrow', { opacity: 1, duration: 0.9, ease: 'power3.out' })
-        // Characters cascade in from below, each settling from a slight tilt
-        .to('.name-char:not(.name-space)', {
-          opacity: 1,
-          yPercent: 0,
-          rotateZ: 0,
-          duration: 1.15,
-          stagger: { each: 0.042, ease: 'power1.in' },
-          ease: 'power4.out',
-        }, '-=0.5')
-        .to('.hero-date',      { opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.55')
-        .to('.hero-venue',     { opacity: 1, duration: 0.6 }, '-=0.45')
-        .to('.hero-rule',      { opacity: 1, duration: 0.5 }, '-=0.35')
-        .to('.hero-countdown', { opacity: 1, duration: 0.9, ease: 'power3.out' }, '-=0.4')
-        .to('.hero-cta',       { opacity: 1, duration: 0.7, ease: 'power3.out' }, '-=0.55')
-        .to('.hero-scroll',    { opacity: 1, duration: 0.6 }, '-=0.35');
-
-      // ── Floating particles (depth: different speeds) ──
-      this.particleEls.forEach((p, i) => {
-        const pEl = p.nativeElement;
-        gsap.to(pEl, {
-          y: -15 + ((i * 7) % 25),
-          x: -8  + ((i * 5) % 14),
-          duration: 3.5 + (i * 0.8) % 3.5,
-          repeat: -1, yoyo: true,
-          ease: 'sine.inOut', delay: i * 0.22,
-        });
+      gsap.to('.deco-floral', {
+        opacity: 1, scale: 1,
+        duration: 1.0, ease: 'back.out(1.6)', delay: 0.7,
       });
+      gsap.set('.deco-floral', { opacity: 0, scale: 0.6 });
 
-      // ── Background parallax (scroll) ──
-      gsap.to('.hero-bg', {
-        yPercent: 22,
+      // ── Content cascade ──
+      const tl = gsap.timeline({ delay: 0.3 });
+
+      tl.fromTo('.hero-eyebrow',
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' }
+      )
+      .fromTo('.hero-names',
+        { opacity: 0, y: 32, scale: 0.96 },
+        { opacity: 1, y: 0, scale: 1, duration: 1.0, ease: 'back.out(1.4)' },
+        '-=0.4'
+      )
+      .fromTo('.hero-date',
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
+        '-=0.5'
+      )
+      .fromTo('.hero-venue',
+        { opacity: 0, y: 12 },
+        { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' },
+        '-=0.4'
+      )
+      .fromTo('.hero-ornament',
+        { opacity: 0, scaleX: 0.5 },
+        { opacity: 1, scaleX: 1, duration: 0.6, ease: 'power3.out' },
+        '-=0.3'
+      );
+
+      // Countdown tiles stagger with spring
+      tl.fromTo('.cu-tile',
+        { opacity: 0, y: 20, scale: 0.85 },
+        {
+          opacity: 1, y: 0, scale: 1,
+          duration: 0.7,
+          stagger: { each: 0.09, ease: 'power2.out' },
+          ease: 'back.out(1.7)',
+        },
+        '-=0.3'
+      );
+
+      tl.fromTo('.hero-cta',
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
+        '-=0.3'
+      )
+      .fromTo(['.hero-scroll', '.hero-url'],
+        { opacity: 0 },
+        { opacity: 1, duration: 0.6 },
+        '-=0.2'
+      );
+
+      // ── Scroll parallax: photo moves slower than viewport ──
+      gsap.to('.photo-bg', {
+        yPercent: 18, scale: 1.06,
         ease: 'none',
-        scrollTrigger: { trigger: el, start: 'top top', end: 'bottom top', scrub: 1.5 },
+        scrollTrigger: { trigger: el, start: 'top top', end: 'bottom top', scrub: 1.8 },
       });
 
-      // Background subtly zooms as hero exits
-      gsap.to('.hero-bg', {
-        scale: 1.08,
-        ease: 'none',
-        scrollTrigger: { trigger: el, start: 'top top', end: 'bottom top', scrub: 2 },
+      // Gentle floating on decorative elements
+      gsap.to('.deco-leaf', {
+        y: -12, rotate: 4,
+        duration: 4, repeat: -1, yoyo: true, ease: 'sine.inOut',
       });
 
-      // ── Content slow upward drift on scroll ──
-      gsap.to('.hero-content', {
-        yPercent: -5,
-        ease: 'none',
-        scrollTrigger: { trigger: el, start: 'top top', end: 'bottom top', scrub: 1 },
+      gsap.to('.deco-floral', {
+        y: 10, rotate: -6,
+        duration: 5.5, repeat: -1, yoyo: true, ease: 'sine.inOut',
       });
-
-      // Particles drift upward faster
-      gsap.to('.hero-particle', {
-        yPercent: -35,
-        ease: 'none',
-        scrollTrigger: { trigger: el, start: 'top top', end: 'bottom top', scrub: 2 },
-      });
-
-      // ── Cinematic scroll exit: chars disperse as hero leaves ──
-      // This plays as you scroll past 20% of the hero section
-      gsap.timeline({
-        scrollTrigger: {
-          trigger: el,
-          start: '20% top',
-          end: 'bottom top',
-          scrub: 1.2,
-        }
-      })
-        .to('.name-char:not(.name-space)', {
-          opacity: 0,
-          yPercent: -20,
-          stagger: { each: 0.018, from: 'center' },
-          ease: 'none',
-        }, 0)
-        .to(['.hero-date', '.hero-venue', '.hero-rule', '.hero-countdown', '.hero-cta', '.hero-eyebrow'], {
-          opacity: 0,
-          ease: 'none',
-        }, 0);
 
     }, el);
   }

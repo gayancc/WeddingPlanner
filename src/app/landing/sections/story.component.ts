@@ -7,7 +7,6 @@ import {
   ViewChild,
   ViewChildren,
   QueryList,
-  signal,
   computed,
 } from '@angular/core';
 import { CoupleStory } from '../../core/models/invitation.model';
@@ -20,7 +19,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
     @if (entries && entries.length > 0) {
       <section id="story" class="story" #sectionEl>
 
-        <!-- Section header — scrolls normally before stage pins -->
+        <!-- Section header -->
         <div class="story-header" #headerEl>
           <p class="story-eyebrow">
             <span class="eyebrow-rule"></span>
@@ -30,291 +29,276 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
           <h2 class="story-title">Our Story</h2>
         </div>
 
-        <!-- ─── Pinned stage ─────────────────────────────── -->
-        <div class="story-stage" #stageEl>
+        <!-- Vertical alternating timeline -->
+        <div class="timeline" #timelineEl>
+          <!-- Center line -->
+          <div class="timeline-line" #lineEl aria-hidden="true"></div>
 
-          <!-- Atmospheric dark gradient -->
-          <div class="stage-atmosphere" aria-hidden="true"></div>
-
-          @if (sorted().length > 1) {
-            <!-- Progress dots — bottom center -->
-            <div class="stage-dots" aria-hidden="true">
-              @for (e of sorted(); track e.id; let i = $index) {
-                <div class="stage-dot" [class.stage-dot--active]="currentIdx() === i"></div>
-              }
-            </div>
-          }
-
-          <!-- Story cards — all absolutely positioned in the stage -->
           @for (entry of sorted(); track entry.id; let i = $index) {
-            <div class="stage-card" #card>
+            <div class="timeline-entry"
+                 [class.timeline-entry--right]="i % 2 !== 0"
+                 #entry>
 
-              <!-- Large decorative chapter number -->
-              <div class="card-deco" aria-hidden="true">{{ decoNum(i) }}</div>
-
-              <!-- Left: Visual -->
-              <div class="card-visual">
-                @if (entry.photoUrl) {
-                  <div class="card-img-frame">
-                    <img
-                      [src]="entry.photoUrl"
-                      [alt]="entry.title"
-                      class="card-img"
-                      loading="lazy"
-                    />
-                    <div class="card-img-overlay"></div>
-                  </div>
-                } @else {
-                  <div class="card-img-frame card-img-frame--empty">
-                    <span class="empty-gem">✦</span>
-                  </div>
-                }
+              <!-- Timeline dot -->
+              <div class="entry-dot" aria-hidden="true">
+                <div class="dot-inner"></div>
               </div>
 
-              <!-- Right: Text -->
-              <div class="card-body">
-                <div class="cb-chapter">{{ chapterLabel(i) }}</div>
-                <time class="cb-date">{{ entry.date }}</time>
-                <h3 class="cb-title">{{ entry.title }}</h3>
-                <p class="cb-desc">{{ entry.description }}</p>
+              <!-- Card -->
+              <div class="entry-card">
+                @if (entry.photoUrl) {
+                  <div class="card-photo">
+                    <img [src]="entry.photoUrl" [alt]="entry.title" loading="lazy" />
+                  </div>
+                }
+                <div class="card-body">
+                  <span class="card-chapter">{{ chapterLabel(i) }}</span>
+                  <time class="card-date">{{ entry.date }}</time>
+                  <h3 class="card-title">{{ entry.title }}</h3>
+                  <p class="card-desc">{{ entry.description }}</p>
+                </div>
               </div>
 
             </div>
           }
         </div>
-        <!-- ─── End pinned stage ──────────────────────────── -->
+
+        <!-- Bottom ornament -->
+        <div class="story-footer" aria-hidden="true">
+          <span class="foot-rule"></span>
+          <span class="foot-gem">✦</span>
+          <span class="foot-rule"></span>
+        </div>
 
       </section>
     }
   `,
   styles: [`
+    /* ── Section shell ── */
     .story {
-      position: relative;
-      background: linear-gradient(180deg, #16120E 0%, #192519 100%);
+      background: var(--lc-bg, #F5F2ED);
+      padding-bottom: 100px;
+      position: relative; overflow: hidden;
     }
 
-    /* ── Section header (scrolls normally) ── */
+    /* ── Subtle tiled texture ── */
+    .story::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(44,74,46,.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* ── Header ── */
     .story-header {
       text-align: center;
-      padding: 120px 24px 80px;
+      padding: 110px 24px 72px;
       opacity: 0;
-      transform: translateY(30px);
     }
 
     .story-eyebrow {
       display: flex; align-items: center; justify-content: center;
-      gap: 18px; font-size: 10px; letter-spacing: .34em;
-      text-transform: uppercase; color: var(--color-gold-dim);
-      margin: 0 0 20px;
+      gap: 16px; font-size: 10px; letter-spacing: .30em;
+      text-transform: uppercase;
+      color: var(--lc-green-mid, #4A7C59);
+      margin: 0 0 18px;
     }
 
     .eyebrow-rule {
-      display: block; width: 40px; height: 1px;
-      background: currentColor; opacity: .6;
+      display: block; width: 36px; height: 1px;
+      background: rgba(44,74,46,.25);
     }
 
     .story-title {
       font-family: var(--font-serif);
-      font-size: clamp(44px, 8vw, 80px);
-      font-weight: 700; color: white;
-      letter-spacing: -0.02em; line-height: 1;
+      font-size: clamp(40px, 7vw, 70px);
+      font-weight: 600;
+      color: var(--lc-text, #1C1C1C);
+      letter-spacing: -.02em; line-height: 1.1;
+      margin: 0;
     }
 
-    /* ── Pinned stage ── */
-    .story-stage {
-      height: 100svh;
+    /* ── Timeline ── */
+    .timeline {
       position: relative;
-      overflow: hidden;
-      background: #16120E;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 40px;
     }
 
-    .stage-atmosphere {
-      position: absolute; inset: 0;
-      background: radial-gradient(
-        ellipse 80% 60% at 50% 50%,
-        rgba(201,168,108,.04) 0%, transparent 70%
-      );
-      pointer-events: none;
-    }
-
-    /* ── Progress dots ── */
-    .stage-dots {
+    /* Vertical center line */
+    .timeline-line {
       position: absolute;
-      bottom: 32px; left: 50%;
+      top: 0; bottom: 0; left: 50%;
+      width: 1px;
       transform: translateX(-50%);
-      display: flex; gap: 8px;
-      z-index: 20;
-    }
-
-    .stage-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: rgba(201,168,108,.3);
-      transition: background 400ms, transform 400ms;
-    }
-
-    .stage-dot--active {
-      background: var(--color-gold);
-      transform: scale(1.4);
-    }
-
-    /* ── Cards ── */
-    .stage-card {
-      position: absolute; inset: 0;
-      display: grid;
-      grid-template-columns: 52% 48%;
-      align-items: center;
-      will-change: transform, opacity;
-    }
-
-    /* Large decorative chapter number behind content */
-    .card-deco {
-      position: absolute;
-      font-family: var(--font-serif);
-      font-size: clamp(140px, 22vw, 260px);
-      font-weight: 700;
-      color: rgba(201,168,108,.04);
-      right: 3%;
-      top: 50%;
-      transform: translateY(-50%);
-      line-height: 1;
-      pointer-events: none;
-      user-select: none;
-      z-index: 0;
-      letter-spacing: -0.04em;
-    }
-
-    /* ── Card visual (left) ── */
-    .card-visual {
-      position: relative;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .card-img-frame {
-      position: absolute; inset: 0;
-      overflow: hidden;
-    }
-
-    .card-img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 8s ease-out;
-      transform: scale(1.05);
-    }
-
-    .stage-card:hover .card-img { transform: scale(1.0); }
-
-    .card-img-overlay {
-      position: absolute; inset: 0;
       background: linear-gradient(
-        to right,
-        rgba(22,18,14,.1) 0%,
-        rgba(22,18,14,.5) 100%
+        to bottom,
+        transparent,
+        rgba(44,74,46,.25) 8%,
+        rgba(44,74,46,.20) 92%,
+        transparent
       );
+      transform-origin: top;
+      transform: translateX(-50%) scaleY(0);
     }
 
-    .card-img-frame--empty {
-      background: rgba(255,255,255,.02);
-      border-right: 1px solid rgba(201,168,108,.08);
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .empty-gem {
-      font-size: 48px; color: rgba(201,168,108,.2);
-    }
-
-    /* ── Card body (right) ── */
-    .card-body {
+    /* ── Entry ── */
+    .timeline-entry {
+      display: grid;
+      grid-template-columns: 1fr 28px 1fr;
+      align-items: start;
+      gap: 0 20px;
+      margin-bottom: 64px;
       position: relative;
-      z-index: 1;
-      padding: 60px 64px 60px 48px;
-      display: flex; flex-direction: column; justify-content: center;
     }
 
-    .cb-chapter {
-      font-size: 10px; letter-spacing: .3em;
+    /* Left entries: card in col 1, dot in col 2, empty col 3 */
+    .timeline-entry .entry-dot { grid-column: 2; grid-row: 1; }
+    .timeline-entry .entry-card { grid-column: 1; grid-row: 1; }
+
+    /* Right entries: empty col 1, dot in col 2, card in col 3 */
+    .timeline-entry--right .entry-card { grid-column: 3; }
+    .timeline-entry--right .entry-dot  { grid-column: 2; }
+
+    /* ── Dot ── */
+    .entry-dot {
+      display: flex; justify-content: center;
+      padding-top: 24px;
+    }
+
+    .dot-inner {
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--lc-surface, #fff);
+      border: 2.5px solid var(--lc-green, #2C4A2E);
+      box-shadow: 0 0 0 4px rgba(44,74,46,.08);
+      flex-shrink: 0;
+    }
+
+    /* ── Card ── */
+    .entry-card {
+      background: var(--lc-surface, #fff);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow:
+        0 2px 8px rgba(44,74,46,.06),
+        0 8px 28px rgba(44,74,46,.06);
+      border: 1px solid var(--lc-border, rgba(44,74,46,.10));
+      opacity: 0;
+      transition: box-shadow 300ms var(--ease-smooth), transform 300ms var(--ease-smooth);
+    }
+
+    .entry-card:hover {
+      box-shadow:
+        0 4px 16px rgba(44,74,46,.09),
+        0 16px 40px rgba(44,74,46,.09);
+      transform: translateY(-4px);
+    }
+
+    .card-photo {
+      width: 100%; aspect-ratio: 16/9; overflow: hidden;
+    }
+
+    .card-photo img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 400ms var(--ease-smooth);
+    }
+
+    .entry-card:hover .card-photo img { transform: scale(1.04); }
+
+    .card-body {
+      padding: 20px 22px 22px;
+    }
+
+    .card-chapter {
+      display: block;
+      font-size: 9.5px; letter-spacing: .20em;
       text-transform: uppercase;
-      color: var(--color-gold-dim);
-      margin-bottom: 20px;
+      color: var(--lc-green-mid, #4A7C59); font-weight: 500;
+      margin-bottom: 4px;
     }
 
-    .cb-date {
+    .card-date {
       display: block;
       font-family: var(--font-serif); font-style: italic;
-      font-size: clamp(14px, 1.6vw, 18px);
-      color: var(--color-gold);
-      margin-bottom: 14px; letter-spacing: .04em;
+      font-size: 13px; color: var(--lc-muted, #6B6B6B);
+      margin-bottom: 10px;
     }
 
-    .cb-title {
+    .card-title {
       font-family: var(--font-serif);
-      font-size: clamp(26px, 4vw, 44px);
-      font-weight: 700; color: white;
-      margin-bottom: 20px; line-height: 1.15;
-      letter-spacing: -0.01em;
+      font-size: clamp(18px, 2.5vw, 22px);
+      font-weight: 600;
+      color: var(--lc-text, #1C1C1C);
+      margin: 0 0 10px; line-height: 1.3;
     }
 
-    .cb-desc {
-      font-size: 15px; line-height: 1.85;
-      color: rgba(255,255,255,.55);
+    .card-desc {
+      font-size: 14px; line-height: 1.65;
+      color: var(--lc-muted, #6B6B6B);
       margin: 0;
-      max-width: 440px;
     }
 
-    /* ── Responsive ── */
-    @media (max-width: 860px) {
-      .stage-card {
-        grid-template-columns: 1fr;
-        grid-template-rows: 45% 55%;
-      }
-
-      .card-visual { height: 100%; grid-row: 1; }
-
-      .card-body {
-        padding: 32px 28px;
-        grid-row: 2;
-        overflow-y: auto;
-      }
-
-      .cb-title { font-size: clamp(22px, 5vw, 32px); }
-
-      .card-deco { font-size: clamp(80px, 18vw, 120px); }
+    /* ── Footer ornament ── */
+    .story-footer {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px;
+      padding-top: 20px;
+      max-width: 280px; margin: 0 auto;
     }
 
-    @media (max-width: 540px) {
-      .story-header { padding: 80px 20px 60px; }
-      .card-body { padding: 24px 20px; }
+    .foot-rule {
+      flex: 1; height: 1px;
+      background: linear-gradient(to right, transparent, rgba(44,74,46,.25));
+    }
+    .foot-rule:last-child {
+      background: linear-gradient(to left, transparent, rgba(44,74,46,.25));
+    }
+
+    .foot-gem { color: var(--lc-gold, #C9A86C); font-size: 14px; }
+
+    /* ── Responsive: single column on mobile ── */
+    @media (max-width: 640px) {
+      .story-header { padding: 80px 24px 56px; }
+
+      .timeline { padding: 0 16px 20px; }
+
+      .timeline-line { left: 20px; }
+
+      .timeline-entry {
+        grid-template-columns: 40px 1fr;
+        gap: 0 12px;
+        margin-bottom: 40px;
+      }
+
+      .timeline-entry .entry-dot      { grid-column: 1; }
+      .timeline-entry .entry-card     { grid-column: 2; }
+      .timeline-entry--right .entry-dot  { grid-column: 1; }
+      .timeline-entry--right .entry-card { grid-column: 2; }
     }
   `],
 })
 export class StoryComponent implements AfterViewInit, OnDestroy {
-  @Input() entries: CoupleStory[] = [];
+  @Input({ required: true }) entries!: CoupleStory[];
 
-  @ViewChild('sectionEl') sectionEl!: ElementRef<HTMLElement>;
-  @ViewChild('headerEl')  headerEl!:  ElementRef<HTMLElement>;
-  @ViewChild('stageEl')   stageEl!:   ElementRef<HTMLElement>;
-  @ViewChildren('card')   cardEls!:   QueryList<ElementRef<HTMLElement>>;
+  @ViewChild('sectionEl')  sectionEl!:  ElementRef<HTMLElement>;
+  @ViewChild('headerEl')   headerEl!:   ElementRef<HTMLElement>;
+  @ViewChild('lineEl')     lineEl!:     ElementRef<HTMLElement>;
+  @ViewChildren('entry')   entryEls!:   QueryList<ElementRef<HTMLElement>>;
 
-  readonly currentIdx = signal(0);
-
-  private ctx?: gsap.Context;
-
-  sorted(): CoupleStory[] {
-    return [...this.entries].sort((a, b) => a.order - b.order);
-  }
+  readonly sorted = computed(() =>
+    [...(this.entries ?? [])].sort((a, b) => a.order - b.order)
+  );
 
   chapterLabel(i: number): string {
     return `Chapter ${String(i + 1).padStart(2, '0')}`;
   }
 
-  decoNum(i: number): string {
-    return String(i + 1).padStart(2, '0');
-  }
+  private ctx?: gsap.Context;
 
   ngAfterViewInit() {
     initGsap();
-    if (typeof window === 'undefined') return;
     this.initAnimations();
   }
 
@@ -324,9 +308,18 @@ export class StoryComponent implements AfterViewInit, OnDestroy {
 
   private initAnimations() {
     const el = this.sectionEl.nativeElement;
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (typeof window === 'undefined') return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.ctx = gsap.context(() => {
+
+      if (reduced) {
+        gsap.set(['.story-header', '.entry-card', '.timeline-line'], {
+          opacity: 1, y: 0, x: 0, scaleY: 1,
+        });
+        return;
+      }
 
       // ── Header reveal ──
       ScrollTrigger.create({
@@ -334,98 +327,63 @@ export class StoryComponent implements AfterViewInit, OnDestroy {
         start: 'top 82%',
         once: true,
         onEnter: () => {
-          gsap.to(this.headerEl.nativeElement, {
-            opacity: 1, y: 0, duration: 1.1, ease: 'power3.out',
+          gsap.to('.story-header', {
+            opacity: 1, y: 0,
+            duration: 0.9, ease: 'power3.out',
           });
         },
       });
 
-      const sorted = this.sorted();
-      const n = sorted.length;
+      // ── Timeline line draws down ──
+      gsap.to(this.lineEl.nativeElement, {
+        scaleY: 1,
+        duration: 1.6, ease: 'power3.inOut',
+        scrollTrigger: {
+          trigger: el,
+          start: 'top 70%',
+          once: true,
+        },
+      });
 
-      if (n === 0) return;
+      // ── Cards slide in from their side ──
+      this.entryEls.forEach((entry, i) => {
+        const isRight = i % 2 !== 0;
+        const card = entry.nativeElement.querySelector('.entry-card');
+        if (!card) return;
 
-      if (n === 1 || prefersReduced) {
-        // Single entry: just reveal it on scroll
-        this.initSingleEntry();
-        return;
-      }
+        gsap.fromTo(card,
+          { opacity: 0, x: isRight ? 40 : -40, y: 20 },
+          {
+            opacity: 1, x: 0, y: 0,
+            duration: 0.85,
+            ease: 'back.out(1.5)',
+            scrollTrigger: {
+              trigger: entry.nativeElement,
+              start: 'top 82%',
+              once: true,
+            },
+          }
+        );
 
-      this.initPinnedScene(n);
+        // Dot scales in
+        const dot = entry.nativeElement.querySelector('.dot-inner');
+        if (dot) {
+          gsap.fromTo(dot,
+            { scale: 0 },
+            {
+              scale: 1,
+              duration: 0.5,
+              ease: 'back.out(2.5)',
+              scrollTrigger: {
+                trigger: entry.nativeElement,
+                start: 'top 80%',
+                once: true,
+              },
+            }
+          );
+        }
+      });
 
     }, el);
-  }
-
-  private initSingleEntry() {
-    const cards = this.cardEls.toArray();
-    if (cards.length === 0) return;
-
-    const card = cards[0].nativeElement;
-    gsap.set(card, { opacity: 0, x: 60 });
-
-    ScrollTrigger.create({
-      trigger: card,
-      start: 'top 80%',
-      once: true,
-      onEnter: () => {
-        gsap.to(card, { opacity: 1, x: 0, duration: 1.0, ease: 'power3.out' });
-      },
-    });
-  }
-
-  private initPinnedScene(n: number) {
-    const stage = this.stageEl.nativeElement;
-    const cards = this.cardEls.toArray().map((c) => c.nativeElement);
-
-    // Initial state: first card visible, rest off-screen right
-    gsap.set(cards[0], { xPercent: 0, opacity: 1 });
-    cards.slice(1).forEach((c) => gsap.set(c, { xPercent: 100, opacity: 0 }));
-
-    // Total pinned scroll = (n-1) * viewport heights
-    const scrollDistance = (n - 1) * window.innerHeight;
-
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: stage,
-        pin: true,
-        anticipatePin: 1,
-        start: 'top top',
-        end: `+=${scrollDistance}`,
-        scrub: 0.9,
-        onUpdate: (self) => {
-          // Track which card should be "active" for progress dots
-          const progress = self.progress;
-          const newIdx = Math.min(Math.floor(progress * n + 0.1), n - 1);
-          if (newIdx !== this.currentIdx()) {
-            this.currentIdx.set(newIdx);
-          }
-        },
-      },
-    });
-
-    // Build card transition sequence
-    // Each transition slot = 1 "timeline unit"
-    // Card i holds for ~70% of its slot, exits in the last ~35%
-    // Overlap with incoming card by ~10%
-    for (let i = 0; i < n - 1; i++) {
-      const cur  = cards[i];
-      const next = cards[i + 1];
-      const base = i; // timeline position for this slot
-
-      // Current card slides out to the left
-      tl.to(cur, {
-        xPercent: -108,
-        opacity: 0,
-        duration: 0.38,
-        ease: 'power2.inOut',
-      }, base + 0.62);
-
-      // Next card slides in from the right (slight overlap)
-      tl.fromTo(next,
-        { xPercent: 108, opacity: 0 },
-        { xPercent: 0,   opacity: 1, duration: 0.38, ease: 'power2.out' },
-        base + 0.68
-      );
-    }
   }
 }

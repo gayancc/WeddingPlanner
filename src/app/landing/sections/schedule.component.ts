@@ -82,17 +82,8 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
   styles: [`
     .schedule {
       padding: 120px 0 140px;
-      background: var(--color-pearl);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .schedule::after {
-      content: '';
-      position: absolute;
-      bottom: -1px; left: 0; right: 0; height: 60px;
-      background: linear-gradient(to top, var(--color-bg), transparent);
-      pointer-events: none;
+      background: var(--lc-surface, #fff);
+      position: relative; overflow: hidden;
     }
 
     .schedule-inner {
@@ -107,25 +98,25 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
 
     .schedule-eyebrow {
       display: flex; align-items: center; justify-content: center;
-      gap: 18px; font-size: 10px; letter-spacing: .34em;
-      text-transform: uppercase; color: var(--color-gold); margin: 0 0 18px;
+      gap: 18px; font-size: 10px; letter-spacing: .30em;
+      text-transform: uppercase; color: var(--lc-green-mid, #4A7C59); margin: 0 0 18px;
     }
 
     .eyebrow-rule {
       display: block; width: 36px; height: 1px;
-      background: currentColor; opacity: .55;
+      background: rgba(44,74,46,.25);
     }
 
     .schedule-title {
       font-family: var(--font-serif);
-      font-size: clamp(42px, 7vw, 72px); font-weight: 700;
-      color: var(--color-fg); letter-spacing: -0.02em;
-      line-height: 1; margin-bottom: 12px;
+      font-size: clamp(40px, 7vw, 68px); font-weight: 600;
+      color: var(--lc-text, #1C1C1C); letter-spacing: -0.02em;
+      line-height: 1.1; margin-bottom: 12px;
     }
 
     .schedule-sub {
       font-family: var(--font-serif); font-style: italic;
-      font-size: 17px; color: var(--color-fg-soft); margin: 0;
+      font-size: 17px; color: var(--lc-muted, #6B6B6B); margin: 0;
     }
 
     /* ── Timeline ── */
@@ -141,8 +132,8 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       background: linear-gradient(
         to bottom,
         transparent,
-        rgba(201,168,108,.3) 10%,
-        rgba(201,168,108,.3) 90%,
+        rgba(44,74,46,.25) 10%,
+        rgba(44,74,46,.25) 90%,
         transparent
       );
       transform-origin: top; transform: scaleY(0);
@@ -153,9 +144,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
       display: grid;
       grid-template-columns: 90px 56px 1fr;
       gap: 0 24px; align-items: center;
-      padding: 20px 0;
-      /* Initial state set by GSAP */
-      opacity: 0;
+      padding: 20px 0; opacity: 0;
       position: relative;
     }
 
@@ -166,14 +155,14 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
     }
 
     .time-val {
-      font-family: var(--font-serif); font-size: 26px; font-weight: 700;
-      color: var(--color-fg); line-height: 1;
+      font-family: var(--font-serif); font-size: 26px; font-weight: 600;
+      color: var(--lc-green, #2C4A2E); line-height: 1;
       font-variant-numeric: tabular-nums;
     }
 
     .time-period {
       font-size: 10px; letter-spacing: .15em;
-      text-transform: uppercase; color: var(--color-fg-soft); margin-top: 3px;
+      text-transform: uppercase; color: var(--lc-muted, #6B6B6B); margin-top: 3px;
     }
 
     /* ── Node ── */
@@ -185,36 +174,38 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
     .node-ring {
       position: absolute; inset: -6px;
       border-radius: 50%;
-      border: 1px solid rgba(201,168,108,.22);
+      border: 1px solid rgba(44,74,46,.20);
       animation: ring-pulse 3s ease-in-out infinite;
     }
 
     @keyframes ring-pulse {
-      0%, 100% { opacity: .4; transform: scale(1); }
-      50%       { opacity: .9; transform: scale(1.15); }
+      0%, 100% { opacity: .35; transform: scale(1); }
+      50%       { opacity: .8;  transform: scale(1.15); }
     }
 
     .node-dot {
       width: 40px; height: 40px; border-radius: 50%;
-      background: var(--color-fg);
-      border: 2px solid var(--color-gold);
+      background: var(--lc-green, #2C4A2E);
+      border: 2.5px solid white;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 0 6px rgba(201,168,108,.08), 0 4px 16px rgba(25,37,25,.25);
+      box-shadow: 0 0 0 5px rgba(44,74,46,.10), 0 4px 14px rgba(44,74,46,.20);
       transition: transform 250ms var(--ease-bounce), box-shadow 250ms;
     }
 
     .timeline-row:hover .node-dot {
       transform: scale(1.12);
-      box-shadow: 0 0 0 10px rgba(201,168,108,.14), 0 6px 20px rgba(25,37,25,.3);
+      box-shadow: 0 0 0 9px rgba(44,74,46,.12), 0 6px 18px rgba(44,74,46,.25);
     }
 
     .node-icon { font-size: 16px; line-height: 1; }
 
     /* ── Card ── */
     .row-card {
-      background: white; border-radius: var(--radius-xl);
-      padding: 24px 28px; box-shadow: var(--shadow-card);
-      border: 1px solid rgba(25,37,25,.05);
+      background: var(--lc-surface, #fff);
+      border-radius: var(--radius-xl);
+      padding: 24px 28px;
+      box-shadow: 0 2px 8px rgba(44,74,46,.06), 0 8px 24px rgba(44,74,46,.05);
+      border: 1px solid var(--lc-border, rgba(44,74,46,.10));
       transition: transform 300ms var(--ease-smooth), box-shadow 300ms;
       position: relative; overflow: hidden;
       transform-origin: left center;
@@ -223,59 +214,42 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
     .row-card::before {
       content: '';
       position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-      background: linear-gradient(to bottom, var(--color-gold), var(--color-champagne));
+      background: var(--lc-green, #2C4A2E);
       border-radius: 3px 0 0 3px;
     }
 
-    /* Gold shimmer sweep on hover */
-    .row-card::after {
-      content: '';
-      position: absolute;
-      top: 0; left: -120%; width: 60%; height: 100%;
-      background: linear-gradient(
-        105deg,
-        transparent 30%,
-        rgba(201,168,108,.07) 50%,
-        transparent 70%
-      );
-      transition: left 0ms;
-    }
-
     .timeline-row:hover .row-card {
-      transform: translateY(-4px) translateX(4px);
-      box-shadow: var(--shadow-lift);
-    }
-
-    .timeline-row:hover .row-card::after {
-      left: 140%; transition: left 500ms ease-out;
+      transform: translateY(-3px) translateX(3px);
+      box-shadow: 0 4px 16px rgba(44,74,46,.09), 0 16px 40px rgba(44,74,46,.08);
     }
 
     .card-number {
-      font-size: 10px; letter-spacing: .2em;
-      text-transform: uppercase; color: var(--color-gold); margin-bottom: 6px;
+      font-size: 10px; letter-spacing: .20em;
+      text-transform: uppercase; color: var(--lc-green-mid, #4A7C59); margin-bottom: 6px;
     }
 
     .card-title {
-      font-family: var(--font-serif); font-size: 22px; font-weight: 700;
-      color: var(--color-fg); margin-bottom: 4px;
+      font-family: var(--font-serif); font-size: 22px; font-weight: 600;
+      color: var(--lc-text, #1C1C1C); margin-bottom: 4px;
     }
 
-    .card-venue { font-size: 14px; color: var(--color-fg-soft); margin: 0 0 2px; }
+    .card-venue { font-size: 14px; color: var(--lc-muted, #6B6B6B); margin: 0 0 2px; }
 
     .card-address {
-      font-size: 12px; color: var(--color-fg-soft);
-      opacity: .7; margin: 0 0 8px;
+      font-size: 12px; color: var(--lc-muted, #6B6B6B);
+      opacity: .8; margin: 0 0 8px;
     }
 
     .card-badge {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 4px 12px; border-radius: var(--radius-full);
-      background: rgba(201,168,108,.10); color: var(--color-amber);
+      background: var(--lc-green-soft, rgba(44,74,46,.07));
+      color: var(--lc-green, #2C4A2E);
       font-size: 11px; letter-spacing: .05em; margin-top: 6px;
     }
 
     .schedule-empty {
-      text-align: center; color: var(--color-fg-soft); font-style: italic;
+      text-align: center; color: var(--lc-muted, #6B6B6B); font-style: italic;
     }
 
     /* ── Responsive ── */

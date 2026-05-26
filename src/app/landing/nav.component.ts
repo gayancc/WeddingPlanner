@@ -30,9 +30,9 @@ const SECTIONS = [
 
     <nav class="nav" [class.nav--scrolled]="scrolled()" [class.nav--open]="menuOpen()" #navEl>
       <a class="nav-brand" href="#top" (click)="closeMenu()">
-        <svg class="brand-gem" viewBox="0 0 24 24" width="18" height="18" fill="none">
-          <path d="M12 2L4 9l8 13 8-13-8-7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-          <path d="M4 9h16M8 9L12 2l4 7" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+        <svg class="brand-icon" viewBox="0 0 32 20" width="28" height="18" fill="none">
+          <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/>
+          <circle cx="22" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/>
         </svg>
         <span class="brand-name">{{ coupleNames || 'Her &amp; Him' }}</span>
       </a>
@@ -89,12 +89,11 @@ const SECTIONS = [
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 2px;
-      background: linear-gradient(to right, var(--color-gold), var(--color-champagne));
+      background: linear-gradient(to right, var(--lc-green), var(--lc-green-mid));
       transform-origin: left;
       transform: scaleX(0);
       z-index: 101;
       pointer-events: none;
-      box-shadow: 0 0 8px rgba(201,168,108,.5);
     }
 
     /* ── Nav shell ── */
@@ -105,72 +104,68 @@ const SECTIONS = [
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 40px;
+      padding: 16px 40px;
+      background: rgba(245, 242, 237, 0.88);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border-bottom: 1px solid transparent;
       transition:
-        background 350ms var(--ease-smooth),
-        padding 350ms var(--ease-smooth),
-        box-shadow 350ms var(--ease-smooth);
+        background 320ms var(--ease-smooth),
+        border-color 320ms var(--ease-smooth),
+        padding 320ms var(--ease-smooth),
+        box-shadow 320ms var(--ease-smooth);
     }
 
     .nav--scrolled {
-      background: rgba(247,243,238,.92);
-      backdrop-filter: blur(16px) saturate(180%);
-      -webkit-backdrop-filter: blur(16px) saturate(180%);
-      box-shadow: 0 1px 0 rgba(25,37,25,.08), 0 4px 24px rgba(25,37,25,.06);
-      padding: 12px 40px;
+      background: rgba(245, 242, 237, 0.97);
+      border-color: var(--lc-border);
+      box-shadow: 0 1px 0 var(--lc-border), 0 4px 20px rgba(44,74,46,.06);
+      padding: 10px 40px;
     }
 
     /* ── Brand ── */
     .nav-brand {
       display: flex; align-items: center; gap: 10px;
-      color: white;
-      transition: color 350ms var(--ease-smooth);
+      color: var(--lc-green);
+      transition: opacity 200ms;
     }
+    .nav-brand:hover { opacity: 0.75; }
 
-    .nav--scrolled .nav-brand { color: var(--color-fg); }
-
-    .brand-gem { color: var(--color-gold); flex-shrink: 0; }
+    .brand-icon { flex-shrink: 0; }
 
     .brand-name {
       font-family: var(--font-serif);
-      font-size: 18px; letter-spacing: .02em; white-space: nowrap;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: .01em;
+      color: var(--lc-text);
+      white-space: nowrap;
     }
 
     /* ── Desktop links ── */
     .nav-links {
-      display: flex; gap: 6px; list-style: none; margin: 0; padding: 0;
+      display: flex; gap: 4px; list-style: none; margin: 0; padding: 0;
     }
 
     .nav-link {
-      display: block; padding: 8px 14px;
-      font-size: 13px; letter-spacing: .06em;
+      display: block; padding: 7px 16px;
+      font-size: 12.5px; letter-spacing: .06em;
       text-transform: uppercase;
-      color: rgba(255,255,255,.85);
+      font-weight: 500;
+      color: var(--lc-muted);
       border-radius: var(--radius-full);
       transition: color 200ms, background 200ms;
-      position: relative;
     }
 
-    .nav--scrolled .nav-link { color: var(--color-fg-soft); }
-
-    /* Animated underline indicator */
-    .nav-link::after {
-      content: '';
-      position: absolute;
-      bottom: 4px; left: 14px; right: 14px;
-      height: 1px;
-      background: var(--color-gold);
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform 280ms var(--ease-smooth);
+    .nav-link:hover {
+      color: var(--lc-green);
+      background: var(--lc-green-soft);
     }
 
-    .nav-link:hover { color: var(--color-gold); }
-    .nav-link:hover::after { transform: scaleX(1); }
-
-    /* Active section indicator */
-    .nav-link--active { color: var(--color-gold) !important; }
-    .nav-link--active::after { transform: scaleX(1); }
+    .nav-link--active {
+      background: var(--lc-green) !important;
+      color: white !important;
+    }
 
     /* ── Hamburger ── */
     .nav-hamburger {
@@ -180,12 +175,11 @@ const SECTIONS = [
 
     .nav-hamburger span {
       display: block; width: 24px; height: 1.5px;
-      background: white; border-radius: 2px;
+      background: var(--lc-text); border-radius: 2px;
       transform-origin: center;
-      transition: transform 300ms var(--ease-smooth), opacity 200ms, background 350ms;
+      transition: transform 300ms var(--ease-smooth), opacity 200ms;
     }
 
-    .nav--scrolled .nav-hamburger span { background: var(--color-fg); }
     .nav-hamburger--open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
     .nav-hamburger--open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
     .nav-hamburger--open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
@@ -194,12 +188,12 @@ const SECTIONS = [
     .mobile-drawer {
       position: fixed;
       top: 0; right: 0; bottom: 0;
-      width: min(320px, 85vw);
-      background: var(--color-fg);
+      width: min(300px, 82vw);
+      background: var(--lc-green);
       z-index: 99;
       display: flex; align-items: center; justify-content: center;
       transform: translateX(100%);
-      transition: transform 400ms var(--ease-cinematic);
+      transition: transform 380ms var(--ease-cinematic);
     }
 
     .mobile-drawer--open { transform: translateX(0); }
@@ -209,23 +203,23 @@ const SECTIONS = [
     }
 
     .drawer-link {
-      display: flex; align-items: baseline; gap: 16px;
-      padding: 20px 0;
-      border-bottom: 1px solid rgba(255,255,255,.08);
+      display: flex; align-items: baseline; gap: 14px;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(255,255,255,.10);
       color: white; font-family: var(--font-serif);
-      font-size: 26px; transition: color 200ms;
+      font-size: 24px; transition: color 200ms;
     }
 
-    .drawer-link:hover { color: var(--color-gold); }
+    .drawer-link:hover { color: var(--lc-gold); }
 
     .drawer-num {
-      font-family: var(--font-sans); font-size: 11px;
-      letter-spacing: .1em; color: var(--color-gold); flex-shrink: 0;
+      font-family: var(--font-sans); font-size: 10px;
+      letter-spacing: .12em; color: rgba(201,168,108,.7); flex-shrink: 0;
     }
 
     .drawer-backdrop {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,.5); z-index: 98;
+      background: rgba(44,74,46,.35); z-index: 98;
       backdrop-filter: blur(4px);
       animation: fade-in 300ms forwards;
     }
@@ -233,8 +227,8 @@ const SECTIONS = [
     @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 
     @media (max-width: 860px) {
-      .nav { padding: 16px 24px; }
-      .nav--scrolled { padding: 12px 24px; }
+      .nav { padding: 14px 20px; }
+      .nav--scrolled { padding: 10px 20px; }
       .nav-links { display: none; }
       .nav-hamburger { display: flex; }
     }
@@ -260,13 +254,13 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
     initGsap();
     this.ctx = gsap.context(() => {
       gsap.from(['.nav-brand', '.nav-link'], {
-        opacity: 0, y: -12,
-        duration: 0.7, stagger: 0.06,
-        ease: 'power3.out', delay: 1.2,
+        opacity: 0, y: -10,
+        duration: 0.6, stagger: 0.05,
+        ease: 'power3.out', delay: 0.8,
       });
     }, this.navEl.nativeElement);
 
-    this.initScrollProgress();
+    this.updateProgress();
     this.initSectionObserver();
   }
 
@@ -277,7 +271,7 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
 
   @HostListener('window:scroll')
   onScroll() {
-    this.scrolled.set(window.scrollY > 60);
+    this.scrolled.set(window.scrollY > 50);
     this.updateProgress();
   }
 
@@ -299,11 +293,6 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
     el.style.transform = `scaleX(${progress})`;
   }
 
-  private initScrollProgress() {
-    // Initial paint
-    this.updateProgress();
-  }
-
   private initSectionObserver() {
     if (typeof IntersectionObserver === 'undefined') return;
 
@@ -313,19 +302,13 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
           for (const entry of entries) {
             if (entry.isIntersecting) {
               const id = entry.target.id;
-              if (id) {
-                this.zone.run(() => this.activeSection.set(id));
-              }
+              if (id) this.zone.run(() => this.activeSection.set(id));
             }
           }
         },
-        {
-          rootMargin: '-30% 0px -60% 0px',
-          threshold: 0,
-        }
+        { rootMargin: '-30% 0px -60% 0px', threshold: 0 }
       );
 
-      // Observe all landing section anchors
       for (const { id } of SECTIONS) {
         const el = document.getElementById(id);
         if (el) this.observer!.observe(el);
