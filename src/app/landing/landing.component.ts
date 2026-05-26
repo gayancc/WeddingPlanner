@@ -39,7 +39,7 @@ import { FooterComponent } from './sections/footer.component';
     <!-- Global ambient atmosphere — always present -->
     <app-ambient />
 
-    <app-landing-nav [coupleNames]="settings()?.coupleNames ?? ''" />
+    <app-landing-nav [coupleNames]="effective().coupleNames" />
 
     @if (loaded()) {
       <app-landing-hero [settings]="effective()" />
@@ -79,7 +79,13 @@ export class LandingComponent {
 
   readonly loaded = computed(() => this.settings() !== undefined || true);
 
-  readonly effective = computed<WeddingSettings>(() => this.settings() ?? this.fallback());
+  // Merge Firestore data with fallback so missing fields always have defaults.
+  // Without this, a partial doc (e.g. only "The Day" saved) returns undefined
+  // for coupleNames, venue, story, etc., overriding the sensible defaults.
+  readonly effective = computed<WeddingSettings>(() => {
+    const s = this.settings();
+    return s ? { ...this.fallback(), ...s } : this.fallback();
+  });
 
   constructor() {
     effect(() => {

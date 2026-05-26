@@ -78,7 +78,7 @@ const PARTICLES = [
 
         <!-- Character-split couple names -->
         <h1 class="hero-names" #namesEl>
-          @for (ch of nameChars(); track $index) {
+          @for (ch of nameChars; track $index) {
             <span class="name-char" [class.name-space]="ch === ' '">{{ ch }}</span>
           }
         </h1>
@@ -417,9 +417,11 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly seconds = signal(0);
   readonly particles = PARTICLES;
 
-  readonly nameChars = computed(() =>
-    (this.settings.coupleNames || 'Her & Him').split('')
-  );
+  // Getter (not computed signal) so it re-evaluates when @Input settings changes.
+  // computed() only tracks Angular signal reads — plain @Input properties are invisible to it.
+  get nameChars(): string[] {
+    return (this.settings.coupleNames || 'Her & Him').split('');
+  }
 
   readonly countdownUnits = computed(() => [
     { value: String(this.days()).padStart(2, '0'),    label: 'Days' },

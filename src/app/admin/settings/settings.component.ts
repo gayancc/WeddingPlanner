@@ -432,7 +432,15 @@ export class SettingsComponent {
 
   private fromRemote(s: WeddingSettings | undefined): SettingsForm {
     if (!s) return this.emptyForm();
-    const dateStr = (t?: Timestamp) => (t ? t.toDate().toISOString().slice(0, 10) : '');
+    // Use local year/month/day to avoid UTC-offset causing the date to show one day off.
+    const dateStr = (t?: Timestamp): string => {
+      if (!t) return '';
+      const d = t.toDate();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
     return {
       person1Name: s.person1Name ?? '',
       person2Name: s.person2Name ?? '',
@@ -463,14 +471,20 @@ export class SettingsComponent {
 
   private toRemotePartial(section: SectionKey): Partial<WeddingSettings> {
     const f = this.form;
-    const toTs = (s: string) => (s ? Timestamp.fromDate(new Date(s)) : undefined);
+    // Parse "YYYY-MM-DD" as local midnight to avoid UTC-offset date shift.
+    // new Date("2025-12-31") is UTC midnight; new Date(2025, 11, 31) is local midnight.
+    const toTs = (s: string): Timestamp | undefined => {
+      if (!s) return undefined;
+      const [y, m, d] = s.split('-').map(Number);
+      return Timestamp.fromDate(new Date(y, m - 1, d));
+    };
     switch (section) {
       case 'couple':
         return { person1Name: f.person1Name, person2Name: f.person2Name, coupleNames: f.coupleNames };
       case 'day':
         return {
-          weddingDate: toTs(f.weddingDate)!,
-          rsvpDeadline: toTs(f.rsvpDeadline)!,
+          weddingDate: toTs(f.weddingDate),
+          rsvpDeadline: toTs(f.rsvpDeadline),
           ceremonyTime: f.ceremonyTime,
           receptionTime: f.receptionTime,
           dressCode: f.dressCode,

@@ -5,7 +5,6 @@ import {
   OnDestroy,
   ElementRef,
   ViewChild,
-  computed,
 } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { WeddingSettings } from '../../core/models/invitation.model';
@@ -35,7 +34,7 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
 
         <!-- Couple names — character split -->
         <h2 class="footer-names" #namesEl [attr.aria-label]="settings.coupleNames || 'Her & Him'">
-          @for (ch of nameChars(); track $index) {
+          @for (ch of nameChars; track $index) {
             <span class="footer-char" [class.footer-space]="ch === ' '">{{ ch }}</span>
           }
         </h2>
@@ -248,9 +247,9 @@ export class FooterComponent implements AfterViewInit, OnDestroy {
 
   readonly year = new Date().getFullYear();
 
-  readonly nameChars = computed(() =>
-    (this.settings.coupleNames || 'Her & Him').split('')
-  );
+  get nameChars(): string[] {
+    return (this.settings.coupleNames || 'Her & Him').split('');
+  }
 
   private ctx?: gsap.Context;
 
