@@ -29,7 +29,7 @@ const SECTIONS = [
     <div class="nav-progress" #progressEl aria-hidden="true"></div>
 
     <nav class="nav" [class.nav--scrolled]="scrolled()" [class.nav--open]="menuOpen()" #navEl>
-      <a class="nav-brand" href="#top" (click)="closeMenu()">
+      <a class="nav-brand" href="/" (click)="scrollTop($event); closeMenu()">
         <svg class="brand-icon" viewBox="0 0 32 20" width="28" height="18" fill="none">
           <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/>
           <circle cx="22" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/>
@@ -41,10 +41,10 @@ const SECTIONS = [
         @for (link of navLinks; track link.href) {
           <li>
             <a
-              [href]="link.href"
+              href="/"
               class="nav-link"
               [class.nav-link--active]="activeSection() === link.id"
-              (click)="closeMenu()"
+              (click)="scrollTo(link.id, $event); closeMenu()"
             >
               {{ link.label }}
             </a>
@@ -70,7 +70,7 @@ const SECTIONS = [
       <ul class="drawer-links">
         @for (link of navLinks; track link.href) {
           <li>
-            <a [href]="link.href" class="drawer-link" (click)="closeMenu()">
+            <a href="/" class="drawer-link" (click)="scrollTo(link.id, $event); closeMenu()">
               <span class="drawer-num">0{{ $index + 1 }}</span>
               <span>{{ link.label }}</span>
             </a>
@@ -273,6 +273,16 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
   onScroll() {
     this.scrolled.set(window.scrollY > 50);
     this.updateProgress();
+  }
+
+  scrollTo(id: string, e: Event) {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  scrollTop(e: Event) {
+    e.preventDefault();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   toggleMenu() {

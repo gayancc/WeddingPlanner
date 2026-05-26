@@ -107,8 +107,8 @@ import { initGsap, gsap, ScrollTrigger } from '../../core/utils/gsap';
 
           <!-- CTA buttons -->
           <div class="hero-cta" #ctaEl>
-            <a href="#story" class="cta-primary">Our Story</a>
-            <a href="#schedule" class="cta-outline">View Schedule</a>
+            <a href="/" class="cta-primary" (click)="scrollTo('story', $event)">Our Story</a>
+            <a href="/" class="cta-outline" (click)="scrollTo('schedule', $event)">View Schedule</a>
           </div>
 
         </div>
@@ -457,6 +457,11 @@ export class HeroComponent implements OnInit, AfterViewInit, OnDestroy {
 
   scrollDown() {
     document.getElementById('story')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  scrollTo(id: string, e: Event) {
+    e.preventDefault();
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
 
   ngOnInit() {
