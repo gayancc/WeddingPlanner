@@ -8,7 +8,11 @@ import {
 } from '@angular/core';
 import { initGsap, gsap } from '../../core/utils/gsap';
 
-// ─── Particle data (deterministic — no Math.random at runtime) ──────────────
+// Deterministic noise — same as atmosphere.component.ts, avoids synchronized stagger
+const prng = (a: number, b: number, c = 0): number => {
+  const v = Math.sin(a * 127.1 + b * 311.7 + c * 74.9453) * 43758.5453;
+  return v - Math.floor(v);
+};
 
 interface BokehDatum {
   id: number; x: number; y: number;
@@ -18,46 +22,28 @@ interface BokehDatum {
 
 interface FairyDatum {
   id: number; x: number; y: number;
-  size: number; twinkleDur: number; twinkleDelay: number;
+  size: number; twinkleDur: number;
   driftX: number; driftY: number;
 }
 
 const BOKEH: BokehDatum[] = [
-  { id: 0,  x: 5,  y: 12, size: 68, opacity: 0.050, blur: 18, gold: false, driftX: -18, driftY: 12,  dur: 9  },
-  { id: 1,  x: 88, y: 8,  size: 44, opacity: 0.045, blur: 12, gold: true,  driftX: 22,  driftY: -14, dur: 11 },
-  { id: 2,  x: 42, y: 78, size: 90, opacity: 0.032, blur: 24, gold: false, driftX: 14,  driftY: -20, dur: 14 },
-  { id: 3,  x: 73, y: 44, size: 36, opacity: 0.058, blur: 10, gold: true,  driftX: -24, driftY: 16,  dur: 8  },
-  { id: 4,  x: 18, y: 91, size: 60, opacity: 0.038, blur: 16, gold: false, driftX: 20,  driftY: -10, dur: 12 },
-  { id: 5,  x: 55, y: 22, size: 32, opacity: 0.062, blur: 8,  gold: true,  driftX: -14, driftY: 18,  dur: 7  },
-  { id: 6,  x: 28, y: 54, size: 76, opacity: 0.034, blur: 20, gold: false, driftX: 18,  driftY: 14,  dur: 15 },
-  { id: 7,  x: 82, y: 80, size: 40, opacity: 0.048, blur: 12, gold: true,  driftX: -20, driftY: -12, dur: 10 },
-  { id: 8,  x: 65, y: 96, size: 52, opacity: 0.040, blur: 16, gold: false, driftX: 16,  driftY: -18, dur: 13 },
-  { id: 9,  x: 35, y: 5,  size: 28, opacity: 0.060, blur: 8,  gold: true,  driftX: -18, driftY: 20,  dur: 8  },
-  { id: 10, x: 93, y: 38, size: 64, opacity: 0.034, blur: 20, gold: false, driftX: 22,  driftY: 12,  dur: 16 },
-  { id: 11, x: 10, y: 62, size: 48, opacity: 0.048, blur: 14, gold: true,  driftX: -16, driftY: -16, dur: 11 },
-  { id: 12, x: 48, y: 58, size: 38, opacity: 0.044, blur: 10, gold: false, driftX: 20,  driftY: -8,  dur: 9  },
-  { id: 13, x: 76, y: 18, size: 72, opacity: 0.032, blur: 22, gold: true,  driftX: -12, driftY: 22,  dur: 14 },
-  { id: 14, x: 22, y: 36, size: 26, opacity: 0.062, blur: 6,  gold: false, driftX: 24,  driftY: -14, dur: 7  },
-  { id: 15, x: 95, y: 68, size: 58, opacity: 0.038, blur: 16, gold: true,  driftX: -20, driftY: 10,  dur: 12 },
-  { id: 16, x: 48, y: 88, size: 34, opacity: 0.052, blur: 10, gold: false, driftX: 14,  driftY: -20, dur: 10 },
-  { id: 17, x: 62, y: 40, size: 50, opacity: 0.044, blur: 14, gold: true,  driftX: -22, driftY: 16,  dur: 13 },
+  { id: 0, x:  8, y: 14, size: 72, opacity: 0.045, blur: 20, gold: false, driftX:-18, driftY: 12, dur: 9  },
+  { id: 1, x: 84, y:  9, size: 48, opacity: 0.040, blur: 14, gold: true,  driftX: 22, driftY:-14, dur:11  },
+  { id: 2, x: 44, y: 76, size: 88, opacity: 0.030, blur: 26, gold: false, driftX: 14, driftY:-20, dur:14  },
+  { id: 3, x: 71, y: 42, size: 40, opacity: 0.052, blur: 12, gold: true,  driftX:-24, driftY: 16, dur: 8  },
+  { id: 4, x: 20, y: 90, size: 64, opacity: 0.034, blur: 18, gold: false, driftX: 20, driftY:-10, dur:12  },
+  { id: 5, x: 58, y: 24, size: 36, opacity: 0.058, blur:  9, gold: true,  driftX:-14, driftY: 18, dur: 7  },
+  { id: 6, x: 30, y: 55, size: 80, opacity: 0.030, blur: 22, gold: false, driftX: 18, driftY: 14, dur:15  },
+  { id: 7, x: 93, y: 70, size: 56, opacity: 0.042, blur: 16, gold: true,  driftX:-20, driftY:-12, dur:10  },
 ];
 
 const FAIRY: FairyDatum[] = [
-  { id: 0,  x: 12, y: 22, size: 3, twinkleDur: 2.2, twinkleDelay: 0.0, driftX: -6,  driftY: 8  },
-  { id: 1,  x: 38, y: 68, size: 2, twinkleDur: 1.8, twinkleDelay: 0.5, driftX: 8,   driftY: -6 },
-  { id: 2,  x: 67, y: 12, size: 4, twinkleDur: 2.5, twinkleDelay: 1.0, driftX: -10, driftY: 12 },
-  { id: 3,  x: 85, y: 55, size: 2, twinkleDur: 1.6, twinkleDelay: 1.4, driftX: 6,   driftY: 10 },
-  { id: 4,  x: 25, y: 80, size: 3, twinkleDur: 2.0, twinkleDelay: 0.7, driftX: -8,  driftY: -8 },
-  { id: 5,  x: 54, y: 42, size: 2, twinkleDur: 2.8, twinkleDelay: 1.8, driftX: 10,  driftY: 6  },
-  { id: 6,  x: 78, y: 90, size: 3, twinkleDur: 1.9, twinkleDelay: 0.3, driftX: -6,  driftY: -10},
-  { id: 7,  x: 8,  y: 48, size: 4, twinkleDur: 2.3, twinkleDelay: 1.2, driftX: 8,   driftY: 8  },
-  { id: 8,  x: 43, y: 15, size: 2, twinkleDur: 1.7, twinkleDelay: 1.6, driftX: -10, driftY: -6 },
-  { id: 9,  x: 92, y: 28, size: 3, twinkleDur: 2.6, twinkleDelay: 0.8, driftX: 6,   driftY: -12},
-  { id: 10, x: 62, y: 72, size: 2, twinkleDur: 2.1, twinkleDelay: 2.0, driftX: -8,  driftY: 10 },
-  { id: 11, x: 30, y: 95, size: 3, twinkleDur: 2.4, twinkleDelay: 0.4, driftX: 10,  driftY: -8 },
-  { id: 12, x: 71, y: 35, size: 2, twinkleDur: 1.8, twinkleDelay: 1.5, driftX: -6,  driftY: 6  },
-  { id: 13, x: 18, y: 58, size: 4, twinkleDur: 2.7, twinkleDelay: 0.9, driftX: 8,   driftY: -6 },
+  { id: 0, x: 12, y: 22, size: 3, twinkleDur: 2.2, driftX: -6, driftY:  8 },
+  { id: 1, x: 38, y: 68, size: 2, twinkleDur: 1.8, driftX:  8, driftY: -6 },
+  { id: 2, x: 67, y: 12, size: 4, twinkleDur: 2.5, driftX:-10, driftY: 12 },
+  { id: 3, x: 85, y: 55, size: 2, twinkleDur: 1.6, driftX:  6, driftY: 10 },
+  { id: 4, x: 25, y: 80, size: 3, twinkleDur: 2.0, driftX: -8, driftY: -8 },
+  { id: 5, x: 54, y: 42, size: 2, twinkleDur: 2.8, driftX: 10, driftY:  6 },
 ];
 
 @Component({
@@ -66,7 +52,6 @@ const FAIRY: FairyDatum[] = [
   template: `
     <div class="ambient-wrap" aria-hidden="true">
 
-      <!-- Bokeh — soft blurred orbs drifting slowly -->
       @for (b of bokeh; track b.id) {
         <div
           class="bokeh"
@@ -83,7 +68,6 @@ const FAIRY: FairyDatum[] = [
         </div>
       }
 
-      <!-- Fairy lights — tiny bright dots that twinkle -->
       @for (f of fairy; track f.id) {
         <div
           class="fairy"
@@ -95,39 +79,28 @@ const FAIRY: FairyDatum[] = [
         </div>
       }
 
-
     </div>
   `,
-  styles: [
-    `
-      .ambient-wrap {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 3;
-        overflow: hidden;
-      }
+  styles: [`
+    .ambient-wrap {
+      position: fixed; inset: 0;
+      pointer-events: none; z-index: 3; overflow: hidden;
+    }
 
-      /* Bokeh — drifting glow orbs */
-      .bokeh {
-        position: absolute;
-        border-radius: 50%;
-        will-change: transform;
-        transform: translateZ(0);
-      }
+    .bokeh {
+      position: absolute; border-radius: 50%;
+      will-change: transform; transform: translateZ(0);
+    }
 
-      /* Fairy lights — tiny sparkling dots */
-      .fairy {
-        position: absolute;
-        border-radius: 50%;
-        background: #FFF9F0;
-        box-shadow: 0 0 6px 3px rgba(255, 248, 224, 0.7);
-        will-change: transform, opacity;
-        transform: translateZ(0);
-      }
+    .fairy {
+      position: absolute; border-radius: 50%;
+      background: #FFF9F0;
+      box-shadow: 0 0 6px 3px rgba(255, 248, 224, 0.7);
+      will-change: transform, opacity; transform: translateZ(0);
+    }
 
-    `,
-  ],
+    @media (prefers-reduced-motion: reduce) { .ambient-wrap { display: none; } }
+  `],
 })
 export class AmbientComponent implements AfterViewInit, OnDestroy {
   readonly bokeh = BOKEH;
@@ -141,6 +114,7 @@ export class AmbientComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     initGsap();
     if (typeof window === 'undefined') return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     this.animate();
   }
 
@@ -149,45 +123,40 @@ export class AmbientComponent implements AfterViewInit, OnDestroy {
   private animate() {
     this.ctx = gsap.context(() => {
 
-      // ── Bokeh drift ─────────────────────────────────────────
+      // Bokeh drift — delays via prng to break synchronized waves
       this.bokehEls.forEach((elRef, i) => {
         const b = this.bokeh[i];
+        const delay = prng(b.id, 7) * b.dur * 0.8; // spread across first 80% of cycle
         gsap.to(elRef.nativeElement, {
-          x: b.driftX,
-          y: b.driftY,
+          x: b.driftX, y: b.driftY,
           duration: b.dur,
-          repeat: -1,
-          yoyo: true,
+          repeat: -1, yoyo: true,
           ease: 'sine.inOut',
-          delay: i * 0.38,
+          delay,
         });
       });
 
-      // ── Fairy light twinkle + slow drift ────────────────────
+      // Fairy light twinkle + slow drift — independent prng delays per element
       this.fairyEls.forEach((elRef, i) => {
         const f = this.fairy[i];
         const el = elRef.nativeElement;
+        const twinkleDelay = prng(f.id + 100, 3) * f.twinkleDur;
+        const driftDelay   = prng(f.id + 200, 5) * f.twinkleDur * 2;
 
-        // Twinkle opacity + scale
         gsap.to(el, {
-          opacity: 0.08,
-          scale: 0.4,
+          opacity: 0.08, scale: 0.4,
           duration: f.twinkleDur,
-          repeat: -1,
-          yoyo: true,
+          repeat: -1, yoyo: true,
           ease: 'sine.inOut',
-          delay: f.twinkleDelay,
+          delay: twinkleDelay,
         });
 
-        // Slow spatial drift
         gsap.to(el, {
-          x: f.driftX,
-          y: f.driftY,
+          x: f.driftX, y: f.driftY,
           duration: f.twinkleDur * 3.2,
-          repeat: -1,
-          yoyo: true,
+          repeat: -1, yoyo: true,
           ease: 'sine.inOut',
-          delay: f.twinkleDelay * 1.5,
+          delay: driftDelay,
         });
       });
 

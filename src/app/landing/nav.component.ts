@@ -30,10 +30,6 @@ const SECTIONS = [
 
     <nav class="nav" [class.nav--scrolled]="scrolled()" [class.nav--open]="menuOpen()" #navEl>
       <a class="nav-brand" href="/" (click)="scrollTop($event); closeMenu()">
-        <svg class="brand-icon" viewBox="0 0 32 20" width="28" height="18" fill="none">
-          <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/>
-          <circle cx="22" cy="10" r="8" stroke="currentColor" stroke-width="1.8"/>
-        </svg>
         <span class="brand-name">{{ coupleNames || 'Her &amp; Him' }}</span>
       </a>
 
@@ -125,21 +121,20 @@ const SECTIONS = [
 
     /* ── Brand ── */
     .nav-brand {
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center;
       color: var(--lc-green);
       transition: opacity 200ms;
     }
-    .nav-brand:hover { opacity: 0.75; }
-
-    .brand-icon { flex-shrink: 0; }
+    .nav-brand:hover { opacity: 0.7; }
 
     .brand-name {
-      font-family: var(--font-serif);
-      font-size: 17px;
+      font-family: 'Dancing Script', cursive;
+      font-size: 26px;
       font-weight: 600;
       letter-spacing: .01em;
-      color: var(--lc-text);
+      color: var(--lc-green, #2C4A2E);
       white-space: nowrap;
+      line-height: 1;
     }
 
     /* ── Desktop links ── */
@@ -253,10 +248,11 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     initGsap();
     this.ctx = gsap.context(() => {
-      gsap.from(['.nav-brand', '.nav-link'], {
-        opacity: 0, y: -10,
-        duration: 0.6, stagger: 0.05,
-        ease: 'power3.out', delay: 0.8,
+      gsap.set(['.nav-brand', '.nav-link'], { opacity: 0, y: -10 });
+      gsap.to('.nav-brand', { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', delay: 0.6 });
+      gsap.to('.nav-link', {
+        opacity: 1, y: 0, duration: 0.5, stagger: 0.05,
+        ease: 'power3.out', delay: 0.75,
       });
     }, this.navEl.nativeElement);
 
@@ -277,11 +273,13 @@ export class LandingNavComponent implements AfterViewInit, OnDestroy {
 
   scrollTo(id: string, e: Event) {
     e.preventDefault();
+    this.activeSection.set(id);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }
 
   scrollTop(e: Event) {
     e.preventDefault();
+    this.activeSection.set('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
